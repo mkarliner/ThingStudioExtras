@@ -36,14 +36,15 @@ Phase 2  first-install path (small, any time)                                   
 
 ## How sessions work on this
 
-From `CLAUDE.md`: the agent sandbox shares the live repos with Mike's Mac.
+**Update 2026-11-25 (Mike): Extras is its own project and works as a ThingStudio user.** An Extras session reads only
+the user documentation and uses only an installed ThingStudio; anything it needs from core goes through a core request
+(`AGENTS.md` in this repo). Phase 0 below was core work, done in the ThingStudio project; it stays here as the record.
+Where Phase 1 text below names core files or fixtures, the `AGENTS.md` rule wins.
 
 - **Git writes:** the session hands Mike the exact commands; Mike runs them in Terminal, starting with
   `rm -f .git/index.lock`. Commands are zsh with no comments.
-- **No `npm`, `vite`, `vitest`, or `make` against the shared `editor/`.** Mike runs builds and test suites, or the session
-  copies the project (without `node_modules`) into its own workspace.
-- **Interface specs:** read before implementing, run the conformance test in the same change, change only with
-  Mike's permission. Permission is given for the two Phase 0 spec changes and the new HA spec (decisions 6, 7).
+- **Interface specs:** this repo's HA spec: read before implementing, run the vectors in the same change, change only
+  with Mike's permission.
 
 ## Phase 0 — core prerequisites (ThingStudio repo, branch from main)
 
@@ -148,7 +149,8 @@ long-lived token from his HA profile) and the broker details in environment vari
   discovery again.
 - The removal record: a small JSON file on the board, written only when the entity set changes.
 - Cleanup on redeploy through `runtime.register_cleanup`.
-- Tests: real MicroPython against the pymock `mqtt_as`, checked against the spec vectors.
+- Tests: real MicroPython (unix port) against a broker double written in this repo, checked against the spec
+  vectors. Not core's pymock fixtures.
 
 **1.4 `ha_device` node.** A source (`eventSource`) whose output reports HA's own status (`online`/`offline` from
 `<prefix>/status`), so a flow can show it or act on it. Settings: device name (default: the board's hostname), area,
@@ -174,10 +176,11 @@ and unit table is copied from HA's docs and dated.
 hooks (derivation, id checks, the component builder) can't be a library. Keep it once in `hooks/`, generate each
 `.compile.py` with `tools/build-hooks.py`, commit the generated files, and have a test fail if they're out of date.
 
-**1.7 Tests in Extras.** Compile tests run the example flows through ThingStudio's `thingstudio-compile
---custom-nodes home-assistant` (expected errors and warnings, including the unwired echo warning and a duplicate id);
-`ts_ha` tests run under MicroPython with ThingStudio's pymock fixtures. The runner expects a ThingStudio checkout
-beside Extras. Mike runs anything that touches `node_modules`.
+**1.7 Tests in Extras.** Compile tests run the example flows through the installed `thingstudio-compile
+--custom-nodes home-assistant` (expected errors and warnings, including the unwired echo warning and a duplicate id),
+as the user guide describes. `ts_ha` tests run under the MicroPython unix port with doubles for `ts_mqtt`, `runtime`
+and `machine` written here from what `custom-nodes.md` documents; anything the docs don't pin down becomes a core
+request. No ThingStudio checkout beside Extras. Mike runs anything that touches the shared folders' `node_modules`.
 
 **1.8 Example flows** (`home-assistant/examples/`): one flow per board using every entity type: a counter or chip
 reading into `ha_sensor`, a button into `ha_binary_sensor`, `ha_switch` driving the onboard LED with its state wired
