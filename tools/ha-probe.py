@@ -10,6 +10,7 @@
 #   4. an empty retained payload removes the device
 #   5. availability offline/online
 #   6. commands from HA arrive on the set topics with the spec's payloads
+#   7. whether a "None" state (or clearing the retained state) makes HA show an entity as unknown
 # It leaves nothing behind: every retained message it set is cleared at the end, also on Ctrl-C.
 #
 # Needs: pip install paho-mqtt (2.x). Settings come from the environment, never the repo:
@@ -205,6 +206,31 @@ def main():
             cmd_lines.append("%s.%s -> %r (spec says %r)%s" % (
                 domain, service, got, expect, "" if got == [expect] else "  <-- DIFFERS"))
         report(6, "Commands arrive on <base>/<node>/set with the spec's payloads?", "\n    ".join(cmd_lines))
+
+        # 7. Unknown after a restart: "None" as the state, and clearing the retained state.
+        none_lines = []
+        for k, comp in COMPONENTS.items():
+            if comp["p"] == "button":
+                continue
+            b.pub("%s/%s/state" % (BASE, k), "None")
+        settle()
+        after_none = {n: s["state"] for n, s in probe_states().items()}
+        for k, comp in COMPONENTS.items():
+            if comp["p"] != "button":
+                none_lines.append("%s (%s): %r" % (comp["name"], comp["p"], after_none.get(comp["name"])))
+        for k, v in STATES.items():
+            b.pub("%s/%s/state" % (BASE, k), v)
+        settle()
+        for k in STATES:
+            b.pub("%s/%s/state" % (BASE, k), "")
+        settle()
+        after_clear = {n: s["state"] for n, s in probe_states().items()}
+        report(7, "Does a \"None\" state make HA show unknown? (and does clearing the retained state?)",
+               "after \"None\":\n      " + "\n      ".join(none_lines) +
+               "\n    after an empty retained message (states were set again first): %s" % after_clear)
+        for k, v in STATES.items():
+            b.pub("%s/%s/state" % (BASE, k), v)
+        settle()
 
         # 5. Availability.
         b.pub(AVTY, "offline")

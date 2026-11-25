@@ -1,0 +1,17 @@
+{
+  "type": "ha/select",
+  "kind": "sink",
+  "eventSource": true,
+  "label": "ha select",
+  "group": "home assistant",
+  "color": "#18bcf2",
+  "bgcolor": "#0b4a63",
+  "icon": "☰",
+  "description": "A list of options in Home Assistant. Sends the option chosen in HA. Wire the current option back to the input so HA shows it; left unwired, the node confirms each choice itself. Needs an ha device node in the flow.",
+  "ports": { "inputs": [{ "name": "msg", "type": "string" }], "outputs": [{ "name": "msg", "type": "string" }] },
+  "properties": [
+    { "name": "name", "label": "name", "kind": "text", "default": "Select" },
+    { "name": "options", "label": "options", "kind": "textarea", "default": "off\non", "help": "One option per line." },
+    { "name": "nodeId", "label": "node id", "kind": "nodeId", "default": "" }
+  ]
+}

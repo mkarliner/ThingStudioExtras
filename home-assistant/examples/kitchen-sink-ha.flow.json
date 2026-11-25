@@ -1,0 +1,448 @@
+{
+  "formatVersion": 1,
+  "flowName": "kitchen-sink-ha",
+  "nodes": [
+    {
+      "id": "hadev",
+      "type": "ha/device",
+      "properties": {
+        "deviceName": "",
+        "area": "Kitchen",
+        "prefix": "homeassistant",
+        "brokerConfigId": "ef01cb90-dda3-4708-86a0-c7d52db02539",
+        "wifiConfigId": "1b1ff863-cb83-4567-af04-4d720eee028b"
+      }
+    },
+    {
+      "id": "hadbg",
+      "type": "thingstudio/debug",
+      "properties": {
+        "fullMessage": false
+      }
+    },
+    {
+      "id": "knob",
+      "type": "thingstudio/adc",
+      "properties": {
+        "pin": 0,
+        "mode": "relative",
+        "delta": 2000,
+        "lower": 45000,
+        "upper": 46000,
+        "sense": "outside",
+        "pollMs": 0
+      }
+    },
+    {
+      "id": "haknob",
+      "type": "ha/sensor",
+      "properties": {
+        "name": "Knob",
+        "deviceClass": "none",
+        "unit": "%",
+        "stateClass": "measurement",
+        "icon": "mdi:knob"
+      }
+    },
+    {
+      "id": "btn",
+      "type": "thingstudio/ebutton",
+      "properties": {
+        "pin": 3,
+        "suppress": false,
+        "senseMode": "auto",
+        "debounceMs": 50,
+        "longPressMs": 1000,
+        "doubleClickMs": 400,
+        "pull": "up"
+      }
+    },
+    {
+      "id": "btnfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "if msg['payload'] in ('press', 'release'):\n    msg['payload'] = msg['payload'] == 'press'\n    return msg\nreturn None",
+        "outputCount": 1,
+        "label": "pressed?"
+      }
+    },
+    {
+      "id": "habtn",
+      "type": "ha/binary_sensor",
+      "properties": {
+        "name": "Button",
+        "deviceClass": "none"
+      }
+    },
+    {
+      "id": "haled",
+      "type": "ha/switch",
+      "properties": {
+        "name": "LED",
+        "deviceClass": "none"
+      }
+    },
+    {
+      "id": "ledfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "on = bool(msg['payload'])\nflow.set('on', on)\nb = flow.get('bright', 32)\nmsg['payload'] = (b << 16 | b << 8 | b) if on else 0\nreturn msg",
+        "outputCount": 1,
+        "label": "on/off colour"
+      }
+    },
+    {
+      "id": "pixel",
+      "type": "thingstudio/neopixel",
+      "properties": {
+        "pin": 6,
+        "count": 1,
+        "order": "GRB"
+      }
+    },
+    {
+      "id": "tick",
+      "type": "thingstudio/timer",
+      "properties": {
+        "intervalMs": 10000
+      }
+    },
+    {
+      "id": "tempfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "import esp32\nmsg['payload'] = round(esp32.mcu_temperature(), 1)\nreturn msg",
+        "outputCount": 1,
+        "label": "chip temperature"
+      }
+    },
+    {
+      "id": "hatemp",
+      "type": "ha/sensor",
+      "properties": {
+        "name": "CPU temperature",
+        "deviceClass": "temperature",
+        "unit": "°C",
+        "stateClass": "measurement",
+        "icon": ""
+      }
+    },
+    {
+      "id": "habright",
+      "type": "ha/number",
+      "properties": {
+        "name": "LED brightness",
+        "min": 0,
+        "max": 255,
+        "step": 1,
+        "unit": "",
+        "mode": "slider"
+      }
+    },
+    {
+      "id": "brightfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "b = int(msg['payload'])\nflow.set('bright', b)\nmsg['payload'] = (b << 16 | b << 8 | b) if flow.get('on', False) else 0\nreturn msg",
+        "outputCount": 1,
+        "label": "brightness"
+      }
+    },
+    {
+      "id": "hahello",
+      "type": "ha/button",
+      "properties": {
+        "name": "Hello"
+      }
+    },
+    {
+      "id": "hellodbg",
+      "type": "thingstudio/debug",
+      "properties": {
+        "fullMessage": false
+      }
+    },
+    {
+      "id": "knobfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "msg['payload'] = msg['payload']['percent']\nreturn msg",
+        "outputCount": 1,
+        "label": "percent"
+      }
+    }
+  ],
+  "edges": [
+    [
+      "hadev",
+      0,
+      "hadbg",
+      0
+    ],
+    [
+      "btn",
+      0,
+      "btnfn",
+      0
+    ],
+    [
+      "btnfn",
+      0,
+      "habtn",
+      0
+    ],
+    [
+      "haled",
+      0,
+      "ledfn",
+      0
+    ],
+    [
+      "ledfn",
+      0,
+      "pixel",
+      0
+    ],
+    [
+      "tick",
+      0,
+      "tempfn",
+      0
+    ],
+    [
+      "tempfn",
+      0,
+      "hatemp",
+      0
+    ],
+    [
+      "habright",
+      0,
+      "brightfn",
+      0
+    ],
+    [
+      "brightfn",
+      0,
+      "pixel",
+      0
+    ],
+    [
+      "hahello",
+      0,
+      "hellodbg",
+      0
+    ],
+    [
+      "knob",
+      0,
+      "knobfn",
+      0
+    ],
+    [
+      "knobfn",
+      0,
+      "haknob",
+      0
+    ]
+  ],
+  "layout": {
+    "hadev": {
+      "pos": [
+        60,
+        60
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "hadbg": {
+      "pos": [
+        260,
+        60
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "knob": {
+      "pos": [
+        60,
+        140
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "haknob": {
+      "pos": [
+        400,
+        140
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "btn": {
+      "pos": [
+        60,
+        220
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "btnfn": {
+      "pos": [
+        220,
+        220
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "habtn": {
+      "pos": [
+        400,
+        220
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "haled": {
+      "pos": [
+        60,
+        300
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "ledfn": {
+      "pos": [
+        220,
+        300
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "pixel": {
+      "pos": [
+        400,
+        380
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "tick": {
+      "pos": [
+        60,
+        620
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "tempfn": {
+      "pos": [
+        220,
+        620
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "hatemp": {
+      "pos": [
+        400,
+        620
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "habright": {
+      "pos": [
+        60,
+        460
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "brightfn": {
+      "pos": [
+        220,
+        460
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "hahello": {
+      "pos": [
+        60,
+        540
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "hellodbg": {
+      "pos": [
+        260,
+        540
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "knobfn": {
+      "pos": [
+        220,
+        140
+      ],
+      "size": [
+        130,
+        34
+      ]
+    }
+  },
+  "configs": [
+    {
+      "id": "1b1ff863-cb83-4567-af04-4d720eee028b",
+      "type": "thingstudio/config/wifi",
+      "properties": {
+        "credentialName": "mihome",
+        "security": "password"
+      }
+    },
+    {
+      "id": "ef01cb90-dda3-4708-86a0-c7d52db02539",
+      "type": "thingstudio/config/mqtt-broker",
+      "properties": {
+        "credentialName": "lan-mqtt-broker"
+      }
+    }
+  ]
+}

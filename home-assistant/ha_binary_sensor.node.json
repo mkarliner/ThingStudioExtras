@@ -1,0 +1,84 @@
+{
+  "type": "ha/binary_sensor",
+  "kind": "sink",
+  "label": "ha binary sensor",
+  "group": "home assistant",
+  "color": "#18bcf2",
+  "bgcolor": "#0b4a63",
+  "icon": "◑",
+  "description": "Shows msg.payload in Home Assistant as on (truthy) or off. None sends nothing. Needs an ha device node in the flow.",
+  "ports": {
+    "inputs": [
+      {
+        "name": "msg",
+        "type": "any"
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "name",
+      "label": "name",
+      "kind": "text",
+      "default": "Binary sensor"
+    },
+    {
+      "name": "deviceClass",
+      "label": "device class",
+      "kind": "select",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "none"
+        },
+        {
+          "value": "door",
+          "label": "door"
+        },
+        {
+          "value": "window",
+          "label": "window"
+        },
+        {
+          "value": "motion",
+          "label": "motion"
+        },
+        {
+          "value": "occupancy",
+          "label": "occupancy"
+        },
+        {
+          "value": "presence",
+          "label": "presence"
+        },
+        {
+          "value": "opening",
+          "label": "opening"
+        },
+        {
+          "value": "moisture",
+          "label": "moisture"
+        },
+        {
+          "value": "light",
+          "label": "light"
+        },
+        {
+          "value": "power",
+          "label": "power"
+        },
+        {
+          "value": "problem",
+          "label": "problem"
+        }
+      ]
+    },
+    {
+      "name": "nodeId",
+      "label": "node id",
+      "kind": "nodeId",
+      "default": ""
+    }
+  ]
+}

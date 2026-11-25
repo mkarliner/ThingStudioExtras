@@ -1,0 +1,16 @@
+{
+  "type": "ha/button",
+  "kind": "source",
+  "eventSource": true,
+  "label": "ha button",
+  "group": "home assistant",
+  "color": "#18bcf2",
+  "bgcolor": "#0b4a63",
+  "icon": "◉",
+  "description": "A button in Home Assistant. Sends true each time it's pressed in HA. Needs an ha device node in the flow.",
+  "ports": { "outputs": [{ "name": "msg", "type": "bool" }] },
+  "properties": [
+    { "name": "name", "label": "name", "kind": "text", "default": "Button" },
+    { "name": "nodeId", "label": "node id", "kind": "nodeId", "default": "" }
+  ]
+}

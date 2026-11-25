@@ -1,0 +1,126 @@
+{
+  "type": "ha/sensor",
+  "kind": "sink",
+  "label": "ha sensor",
+  "group": "home assistant",
+  "color": "#18bcf2",
+  "bgcolor": "#0b4a63",
+  "icon": "◔",
+  "description": "Shows msg.payload in Home Assistant as a sensor: a number or text. None sends nothing. Needs an ha device node in the flow.",
+  "ports": {
+    "inputs": [
+      {
+        "name": "msg",
+        "type": "any"
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "name",
+      "label": "name",
+      "kind": "text",
+      "default": "Sensor"
+    },
+    {
+      "name": "deviceClass",
+      "label": "device class",
+      "kind": "select",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "none"
+        },
+        {
+          "value": "temperature",
+          "label": "temperature"
+        },
+        {
+          "value": "humidity",
+          "label": "humidity"
+        },
+        {
+          "value": "pressure",
+          "label": "pressure"
+        },
+        {
+          "value": "illuminance",
+          "label": "illuminance"
+        },
+        {
+          "value": "voltage",
+          "label": "voltage"
+        },
+        {
+          "value": "current",
+          "label": "current"
+        },
+        {
+          "value": "power",
+          "label": "power"
+        },
+        {
+          "value": "energy",
+          "label": "energy"
+        },
+        {
+          "value": "battery",
+          "label": "battery"
+        },
+        {
+          "value": "signal_strength",
+          "label": "signal strength"
+        },
+        {
+          "value": "duration",
+          "label": "duration"
+        }
+      ]
+    },
+    {
+      "name": "unit",
+      "label": "unit",
+      "kind": "text",
+      "default": "",
+      "help": "e.g. °C, %, V. Must suit the device class."
+    },
+    {
+      "name": "stateClass",
+      "label": "state class",
+      "kind": "select",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "none"
+        },
+        {
+          "value": "measurement",
+          "label": "measurement"
+        },
+        {
+          "value": "total",
+          "label": "total"
+        },
+        {
+          "value": "total_increasing",
+          "label": "total increasing"
+        }
+      ]
+    },
+    {
+      "name": "icon",
+      "label": "icon",
+      "kind": "text",
+      "default": "",
+      "help": "An mdi: icon, e.g. mdi:knob. Optional."
+    },
+    {
+      "name": "nodeId",
+      "label": "node id",
+      "kind": "nodeId",
+      "default": ""
+    }
+  ]
+}

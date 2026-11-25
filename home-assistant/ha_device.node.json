@@ -1,0 +1,21 @@
+{
+  "type": "ha/device",
+  "kind": "source",
+  "eventSource": true,
+  "label": "ha device",
+  "group": "home assistant",
+  "color": "#18bcf2",
+  "bgcolor": "#0b4a63",
+  "icon": "⌂",
+  "description": "Makes this board a Home Assistant device over MQTT: its ha nodes appear under it, it shows offline in HA when the board drops off. Sends HA's own status (online/offline) when it changes. One per flow.",
+  "ports": { "outputs": [{ "name": "msg", "type": "string" }] },
+  "properties": [
+    { "name": "deviceName", "label": "device name", "kind": "text", "default": "", "help": "The name HA shows. Empty: the board's hostname." },
+    { "name": "area", "label": "area", "kind": "text", "default": "", "help": "Suggested HA area, e.g. Kitchen. Optional." },
+    { "name": "prefix", "label": "discovery prefix", "kind": "text", "default": "homeassistant" },
+    { "name": "brokerConfigId", "label": "MQTT Broker", "kind": "configRef", "configType": "thingstudio/config/mqtt-broker", "singleton": true, "default": "" },
+    { "name": "wifiConfigId", "label": "WiFi", "kind": "configRef", "configType": "thingstudio/config/wifi", "singleton": true, "default": "" },
+    { "name": "board", "label": "board", "kind": "target", "default": "" },
+    { "name": "nodeId", "label": "node id", "kind": "nodeId", "default": "" }
+  ]
+}

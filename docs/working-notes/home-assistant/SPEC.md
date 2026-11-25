@@ -1,6 +1,7 @@
-# ThingStudio ↔ Home Assistant over MQTT — SPEC (draft v0)
+# ThingStudio ↔ Home Assistant over MQTT — SPEC v1
 
-**Status: draft, checked on Mike's HA 2026-11-25 (§10); ready to freeze on Mike's word.** Phase 1 task 1.1 of
+**Status: frozen v1, 2026-11-25 (Mike).** Checked on Mike's HA (§10). v1.1 (2026-11-25, Mike's permission): a
+state is unknown until the running flow reports it (§3, §5). Phase 1 task 1.1 of
 `../home-assistant-implementation-plan.md` (decision 7: the HA contract has its own spec, with vectors; Mike's
 permission for this spec is in the plan). After freezing, a change needs Mike's permission, like every ThingStudio
 interface spec.
@@ -51,6 +52,11 @@ States are retained so that HA, restarting while the broker stays up, shows the 
 
 For every state: a flow value of `None` publishes nothing.
 
+**Unknown until reported (v1.1).** When a flow starts, each entity with a state shows as unknown in HA until the
+flow (or the echo) reports one. The board does this by publishing the text `None` (retained, QoS 0) on the state
+topic, which HA shows as `unknown` for every type above (§10, check 7). Without it, HA and the broker keep the
+previous flow's last value, e.g. a switch shown on while the new flow has just started with the LED off.
+
 **Unwired input** on `ha_switch`, `ha_number`, `ha_select` (decision 9): the board publishes each accepted command
 back as the state, as if the flow had confirmed it. The compile warns.
 
@@ -95,8 +101,11 @@ as parsed objects, not bytes.
 ## 5. Availability
 
 - Will (set before the first connect): `offline`, retained, QoS 1, on `<base>/availability`.
-- On every connect, in order: `online` (retained, QoS 1) on `<base>/availability`, then the discovery message,
-  then subscribe to the command topics and `<prefix>/status`.
+- On every connect, in order: `online` (retained, QoS 1) on `<base>/availability`, then the discovery message.
+- On the first connect after the flow starts (not on later reconnects, which keep this flow's states): `None` on the
+  state topic of every entity with a state that the flow hasn't reported yet (§3).
+- The board is subscribed to its command topics and `<prefix>/status`. On a reconnect `ts_mqtt` restores those
+  subscriptions before the two publishes; nothing depends on the order, since command topics are not retained.
 
 ## 6. HA restarts
 
@@ -140,6 +149,9 @@ or "ignored". `ts_ha`'s tests in Extras run both under MicroPython.
 5. `offline` on the availability topic made every entity `unavailable`; `online` restored the states.
 6. Commands from HA (`switch.turn_on`/`turn_off`, `number.set_value`, `select.select_option`, `button.press`)
    arrived on `<base>/<node id>/set` as `ON`, `OFF`, `42`, `on`, `PRESS`, as §3 says.
+
+7. A state of `None` made HA show `unknown` for sensor, binary_sensor, switch, number and select. An empty retained
+   message on the state topic changed nothing in HA (it only clears the broker's copy), so it can't be used for this.
 
 Not covered by the probe, left for the hardware pass (plan 1.9): retained states after an HA restart with the
 board off, and the `<prefix>/status` republish.

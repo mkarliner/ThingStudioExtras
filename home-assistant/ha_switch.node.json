@@ -1,0 +1,59 @@
+{
+  "type": "ha/switch",
+  "kind": "sink",
+  "eventSource": true,
+  "label": "ha switch",
+  "group": "home assistant",
+  "color": "#18bcf2",
+  "bgcolor": "#0b4a63",
+  "icon": "⏻",
+  "description": "A switch in Home Assistant. Sends true/false when it's switched in HA. Wire the real state back to the input so HA shows it; left unwired, the node confirms each command itself. Needs an ha device node in the flow.",
+  "ports": {
+    "inputs": [
+      {
+        "name": "msg",
+        "type": "any"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "msg",
+        "type": "bool"
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "name",
+      "label": "name",
+      "kind": "text",
+      "default": "Switch"
+    },
+    {
+      "name": "deviceClass",
+      "label": "device class",
+      "kind": "select",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "none"
+        },
+        {
+          "value": "switch",
+          "label": "switch"
+        },
+        {
+          "value": "outlet",
+          "label": "outlet"
+        }
+      ]
+    },
+    {
+      "name": "nodeId",
+      "label": "node id",
+      "kind": "nodeId",
+      "default": ""
+    }
+  ]
+}
