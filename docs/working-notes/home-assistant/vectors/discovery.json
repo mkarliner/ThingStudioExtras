@@ -1,0 +1,74 @@
+{
+  "comment": "SPEC §4/§7. Compare payloads as parsed JSON.",
+  "cases": [
+    {
+      "name": "sensor and switch, no record",
+      "chipId": "a0b1c2d3e4f5",
+      "prefix": "homeassistant",
+      "device": {"name": "kitchen", "model": "ESP32-C3 SuperMini", "runtime": "15.1.0", "area": "Kitchen", "bundle": "0.1.0"},
+      "components": {
+        "7": {"p": "sensor", "name": "Temperature", "dev_cla": "temperature", "unit_of_meas": "°C", "stat_cla": "measurement"},
+        "9": {"p": "switch", "name": "Lamp"}
+      },
+      "record": null,
+      "topic": "homeassistant/device/ts_a0b1c2d3e4f5/config",
+      "payload": {
+        "dev": {"ids": ["ts_a0b1c2d3e4f5"], "name": "kitchen", "mdl": "ESP32-C3 SuperMini", "mf": "ThingStudio", "sw": "15.1.0", "sa": "Kitchen"},
+        "o": {"name": "ThingStudio", "sw": "0.1.0"},
+        "avty_t": "thingstudio/a0b1c2d3e4f5/availability",
+        "cmps": {
+          "7": {"p": "sensor", "name": "Temperature", "uniq_id": "ts_a0b1c2d3e4f5_7", "stat_t": "thingstudio/a0b1c2d3e4f5/7/state", "dev_cla": "temperature", "unit_of_meas": "°C", "stat_cla": "measurement"},
+          "9": {"p": "switch", "name": "Lamp", "uniq_id": "ts_a0b1c2d3e4f5_9", "stat_t": "thingstudio/a0b1c2d3e4f5/9/state", "cmd_t": "thingstudio/a0b1c2d3e4f5/9/set"}
+        }
+      },
+      "recordAfter": {"device": "ts_a0b1c2d3e4f5", "cmps": {"7": "sensor", "9": "switch"}}
+    },
+    {
+      "name": "every other type, no area, custom prefix",
+      "chipId": "00ff",
+      "prefix": "ha",
+      "device": {"name": "bench", "model": "Freenove ESP32-S3 4in", "runtime": "15.1.0", "area": "", "bundle": "0.1.0"},
+      "components": {
+        "b": {"p": "binary_sensor", "name": "Door", "dev_cla": "door"},
+        "n": {"p": "number", "name": "Brightness", "min": 0, "max": 100, "step": 1, "unit_of_meas": "%", "mode": "slider"},
+        "s": {"p": "select", "name": "Mode", "ops": ["off", "auto", "on"]},
+        "k": {"p": "button", "name": "Restart"}
+      },
+      "record": null,
+      "topic": "ha/device/ts_00ff/config",
+      "payload": {
+        "dev": {"ids": ["ts_00ff"], "name": "bench", "mdl": "Freenove ESP32-S3 4in", "mf": "ThingStudio", "sw": "15.1.0"},
+        "o": {"name": "ThingStudio", "sw": "0.1.0"},
+        "avty_t": "thingstudio/00ff/availability",
+        "cmps": {
+          "b": {"p": "binary_sensor", "name": "Door", "uniq_id": "ts_00ff_b", "stat_t": "thingstudio/00ff/b/state", "dev_cla": "door"},
+          "n": {"p": "number", "name": "Brightness", "uniq_id": "ts_00ff_n", "stat_t": "thingstudio/00ff/n/state", "cmd_t": "thingstudio/00ff/n/set", "min": 0, "max": 100, "step": 1, "unit_of_meas": "%", "mode": "slider"},
+          "s": {"p": "select", "name": "Mode", "uniq_id": "ts_00ff_s", "stat_t": "thingstudio/00ff/s/state", "cmd_t": "thingstudio/00ff/s/set", "ops": ["off", "auto", "on"]},
+          "k": {"p": "button", "name": "Restart", "uniq_id": "ts_00ff_k", "cmd_t": "thingstudio/00ff/k/set"}
+        }
+      },
+      "recordAfter": {"device": "ts_00ff", "cmps": {"b": "binary_sensor", "n": "number", "s": "select", "k": "button"}}
+    },
+    {
+      "name": "a removed switch gets a stub once",
+      "chipId": "a0b1c2d3e4f5",
+      "prefix": "homeassistant",
+      "device": {"name": "kitchen", "model": "ESP32-C3 SuperMini", "runtime": "15.1.0", "area": "", "bundle": "0.1.0"},
+      "components": {
+        "7": {"p": "sensor", "name": "Temperature"}
+      },
+      "record": {"device": "ts_a0b1c2d3e4f5", "cmps": {"7": "sensor", "9": "switch"}},
+      "topic": "homeassistant/device/ts_a0b1c2d3e4f5/config",
+      "payload": {
+        "dev": {"ids": ["ts_a0b1c2d3e4f5"], "name": "kitchen", "mdl": "ESP32-C3 SuperMini", "mf": "ThingStudio", "sw": "15.1.0"},
+        "o": {"name": "ThingStudio", "sw": "0.1.0"},
+        "avty_t": "thingstudio/a0b1c2d3e4f5/availability",
+        "cmps": {
+          "7": {"p": "sensor", "name": "Temperature", "uniq_id": "ts_a0b1c2d3e4f5_7", "stat_t": "thingstudio/a0b1c2d3e4f5/7/state"},
+          "9": {"p": "switch"}
+        }
+      },
+      "recordAfter": {"device": "ts_a0b1c2d3e4f5", "cmps": {"7": "sensor"}}
+    }
+  ]
+}

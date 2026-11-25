@@ -1,0 +1,36 @@
+{
+  "comment": "SPEC §3. state: flow value -> payload text, or null for 'publish nothing', or 'ERROR' for a node error. command: payload -> flow value, or 'IGNORED'.",
+  "state": [
+    {"p": "sensor", "value": 21, "payload": "21"},
+    {"p": "sensor", "value": 21.5, "payload": "21.5"},
+    {"p": "sensor", "value": 0.1, "payload": "0.1"},
+    {"p": "sensor", "value": "hello", "payload": "hello"},
+    {"p": "sensor", "value": null, "payload": null},
+    {"p": "sensor", "value": true, "payload": "ERROR"},
+    {"p": "binary_sensor", "value": true, "payload": "ON"},
+    {"p": "binary_sensor", "value": 0, "payload": "OFF"},
+    {"p": "binary_sensor", "value": "", "payload": "OFF"},
+    {"p": "binary_sensor", "value": null, "payload": null},
+    {"p": "switch", "value": 1, "payload": "ON"},
+    {"p": "switch", "value": false, "payload": "OFF"},
+    {"p": "number", "value": 42, "payload": "42"},
+    {"p": "number", "value": 2.5, "payload": "2.5"},
+    {"p": "number", "value": "x", "payload": "ERROR"},
+    {"p": "select", "options": ["off", "on"], "value": "on", "payload": "on"},
+    {"p": "select", "options": ["off", "on"], "value": "maybe", "payload": "ERROR"}
+  ],
+  "command": [
+    {"p": "switch", "payload": "ON", "value": true},
+    {"p": "switch", "payload": "OFF", "value": false},
+    {"p": "switch", "payload": "on", "value": "IGNORED"},
+    {"p": "number", "min": 0, "max": 100, "step": 1, "payload": "42", "value": 42},
+    {"p": "number", "min": 0, "max": 100, "step": 1, "payload": "42.0", "value": 42},
+    {"p": "number", "min": 0, "max": 1, "step": 0.1, "payload": "0.5", "value": 0.5},
+    {"p": "number", "min": 0, "max": 100, "step": 1, "payload": "150", "value": "IGNORED"},
+    {"p": "number", "min": 0, "max": 100, "step": 1, "payload": "abc", "value": "IGNORED"},
+    {"p": "select", "options": ["off", "on"], "payload": "on", "value": "on"},
+    {"p": "select", "options": ["off", "on"], "payload": "maybe", "value": "IGNORED"},
+    {"p": "button", "payload": "PRESS", "value": true},
+    {"p": "button", "payload": "x", "value": "IGNORED"}
+  ]
+}
