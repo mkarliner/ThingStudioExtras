@@ -1,8 +1,8 @@
 # Home Assistant work — Phase 0 briefing (2026-11-25)
 
-**For the next session.** Read this, then `home-assistant-implementation-plan.md` (the plan and its 16 decisions),
-then start Phase 0.4. The background reasoning is in `home-assistant-integration-scoping.md`. All three are in the
-ThingStudio project and in ThingStudioExtras `docs/working-notes/`.
+**For the next session.** Read this, then `implementation-plan.md` (the plan and its 16 decisions),
+then start Phase 0.4. The background reasoning is in `scoping.md`. All three are in the
+ThingStudio project and in ThingStudioExtras `home-assistant/docs/working-notes/`.
 
 ## Where things stand
 

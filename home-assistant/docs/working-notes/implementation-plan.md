@@ -1,7 +1,7 @@
 # Home Assistant integration — implementation plan
 
 **Status: agreed shape, 2026-11-24.** Written with Mike after a question-by-question pass over
-`home-assistant-integration-scoping.md` (the brief). This plan supersedes the brief's open questions; the brief stays
+`scoping.md` (the brief). This plan supersedes the brief's open questions; the brief stays
 as the background and the reasoning. Phase 0 and Phase 1 are planned task by task; later phases are milestones,
 planned in detail when they start.
 
@@ -15,7 +15,7 @@ planned in detail when they start.
 | 4 | **The HA nodes are custom nodes in the Extras repo**, shipped as one bundle folder. Only on the palette for people who install them. |
 | 5 | **User libraries (part A of `user-libraries-and-frozen-builds-scoping.md`) are built in core first**, so the shared HA code is a real library (`ts_ha`), not copied into every node. |
 | 6 | **A custom node package can carry its own library:** a bundle is a subfolder of `custom-nodes/` with its nodes and a `lib/`. Mike approved the spec changes: node-descriptor SPEC §3 (bundle layout) and a new library-format spec. |
-| 7 | **The HA contract gets its own spec, in Extras:** `docs/working-notes/home-assistant/SPEC.md`, with conformance vectors. |
+| 7 | **The HA contract gets its own spec, in Extras:** `home-assistant/docs/working-notes/SPEC.md`, with conformance vectors. |
 | 8 | **Topics use the chip ID:** `thingstudio/<chip id>/...`. HA unique ids also use the chip ID. The hostname is the device name HA shows. |
 | 9 | **Unwired input on a commandable entity** (switch, number, select): the node echoes the command back as confirmed state, and the compile gives a warning. |
 | 10 | **Removed entities:** the board keeps a small record of the entities it last announced and tells HA to remove any that have gone. Dropped if testing shows HA removes missing entities by itself. |
@@ -102,22 +102,23 @@ Repo layout:
 
 ```
 ThingStudioExtras/
-  home-assistant/                    the bundle: copied into ~/.thingstudio/custom-nodes/
-    README.md                        install, minimum ThingStudio version, broker setup
-    ha_device.node.json / .node.py / .compile.py
-    ha_sensor.…  ha_binary_sensor.…  ha_switch.…  ha_number.…  ha_select.…  ha_button.…
-    lib/ts_ha.py
-    examples/                        example flows
-  hooks/                             shared compile-hook source (see 1.6)
-  tools/                             build-hooks, ha-probe, ha-cleanup, test runner
-  test/
-  docs/working-notes/
-    home-assistant-integration-scoping.md
-    home-assistant-implementation-plan.md
-    home-assistant/SPEC.md (+ vectors/)
+  AGENTS.md, CLAUDE.md               repo-wide rules
+  docs/core-requests/                requests to core, from any bundle
+  home-assistant/                    everything for this node set; a session normally works inside one such folder
+    home-assistant/                  the bundle: this folder is copied into ~/.thingstudio/custom-nodes/
+      README.md                      install, minimum ThingStudio version, broker setup
+      ha_device.node.json / .node.py / .compile.py
+      ha_sensor.…  ha_binary_sensor.…  ha_switch.…  ha_number.…  ha_select.…  ha_button.…
+      lib/ts_ha.py
+      examples/                      example flows
+    hooks/                           shared compile-hook source (see 1.6)
+    tools/                           build-hooks, ha-probe, ha-cleanup, test runner
+    test/
+    docs/working-notes/              scoping.md, implementation-plan.md, briefings, SPEC.md (+ vectors/)
 ```
+(Layout updated 2026-11-26, Mike: one folder per node set, holding the bundle, its tools and its working notes.)
 
-**1.1 The HA spec** (`docs/working-notes/home-assistant/SPEC.md`):
+**1.1 The HA spec** (`home-assistant/docs/working-notes/SPEC.md`):
 - **Ids.** Device id `ts_<chip id hex>` (`machine.unique_id()`); entity unique id `<device id>_<nodeId>`.
 - **Topics.** `thingstudio/<chip id>/availability`; `thingstudio/<chip id>/<nodeId>/state`; `…/<nodeId>/set` for
   commandable entities. Discovery on `<prefix>/device/<device id>/config` (prefix default `homeassistant`).
@@ -133,14 +134,14 @@ ThingStudioExtras/
 - **QoS and retain** per message.
 - Vectors: example node sets → the exact discovery JSON; example values → topic and payload; a removal case.
 
-**1.2 Check HA's behaviour on Mike's HA before freezing the spec.** A small CPython script (`tools/ha-probe.py`,
+**1.2 Check HA's behaviour on Mike's HA before freezing the spec.** A small CPython script (`home-assistant/tools/ha-probe.py`,
 paho-mqtt plus HA's REST API) that publishes the spec's messages and reads back `/api/states` and the device
 registry. It answers: the device-discovery key names and whether `o` is required; the exact form of a removal entry;
 whether a component missing from a republished `cmps` is removed (this decides whether decision 10's record is
 needed); empty payload deleting the device; availability behaviour. Mike runs it: it needs `HA_URL`, `HA_TOKEN` (a
 long-lived token from his HA profile) and the broker details in environment variables, never in the repo.
 
-**1.3 `ts_ha` library** (`home-assistant/lib/ts_ha.py`). One module, so its state is shared by every HA node.
+**1.3 `ts_ha` library** (`home-assistant/home-assistant/lib/ts_ha.py`). One module, so its state is shared by every HA node.
 - `configure_device(...)` from `ha_device`: names, prefix, broker client; sets the will before the first connect (all
   node setup runs at flow start, before any task connects).
 - `register(node_id, component)` from each entity node at setup; `publish_state(node_id, value)`; `commands(node_id)`
@@ -173,16 +174,16 @@ Each hook builds its own abbreviated component dict, validated, so the board onl
 and unit table is copied from HA's docs and dated.
 
 **1.6 Shared hook code.** Compile hooks can import only the sandbox's built-in modules, so code shared by the seven
-hooks (derivation, id checks, the component builder) can't be a library. Keep it once in `hooks/`, generate each
-`.compile.py` with `tools/build-hooks.py`, commit the generated files, and have a test fail if they're out of date.
+hooks (derivation, id checks, the component builder) can't be a library. Keep it once in `home-assistant/hooks/`, generate each
+`.compile.py` with `home-assistant/tools/build-hooks.py`, commit the generated files, and have a test fail if they're out of date.
 
 **1.7 Tests in Extras.** Compile tests run the example flows through the installed `thingstudio-compile
---custom-nodes home-assistant` (expected errors and warnings, including the unwired echo warning and a duplicate id),
+--custom-nodes home-assistant/home-assistant` (expected errors and warnings, including the unwired echo warning and a duplicate id),
 as the user guide describes. `ts_ha` tests run under the MicroPython unix port with doubles for `ts_mqtt`, `runtime`
 and `machine` written here from what `custom-nodes.md` documents; anything the docs don't pin down becomes a core
 request. No ThingStudio checkout beside Extras. Mike runs anything that touches the shared folders' `node_modules`.
 
-**1.8 Example flows** (`home-assistant/examples/`): one flow per board using every entity type: a counter or chip
+**1.8 Example flows** (`home-assistant/home-assistant/examples/`): one flow per board using every entity type: a counter or chip
 reading into `ha_sensor`, a button into `ha_binary_sensor`, `ha_switch` driving the onboard LED with its state wired
 back, `ha_number` driving PWM brightness, `ha_select` and `ha_button` into debug, and one unwired switch to show the
 echo.
@@ -196,14 +197,14 @@ echo.
 - rename the board → entities and topics unchanged, device name updated
 - deploy a non-HA flow → device stays in HA (as documented)
 - C3: log `freeIdfHeapBytes` / `largestIdfHeapBlockBytes` before and after discovery
-- `tools/ha-cleanup.py` removes the `ts-test-…` devices afterwards
+- `home-assistant/tools/ha-cleanup.py` removes the `ts-test-…` devices afterwards
 
 **1.10 Docs.** In Extras: the bundle README (install by copying the folder; minimum ThingStudio version; setting up
 the Mosquitto add-on and MQTT integration; removing a device), and a page per node in the house layout. In
 ThingStudio: a short pointer from `custom-nodes.md` and the nodes catalog. Optional: a `coming-from/esphome.md`
 page making the drag-and-drop case.
 
-**1.11 Wrap-up.** Briefing in Extras `docs/working-notes/`; update this plan's status.
+**1.11 Wrap-up.** Briefing in `home-assistant/docs/working-notes/`; update this plan's status.
 
 ## Phase S — native API spike (parallel; ThingStudio branch `esphome-native-api-spike`)
 

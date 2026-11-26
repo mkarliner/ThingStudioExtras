@@ -1,7 +1,7 @@
 # Home Assistant bundle — Phase 1 briefing (2026-11-25)
 
 **For the first session in the ThingStudioExtras project.** From today Extras works as a ThingStudio user: read
-`AGENTS.md` first. Plan: `home-assistant-implementation-plan.md`. Contract: `home-assistant/SPEC.md` (v1.1) with
+`AGENTS.md` first. Plan: `implementation-plan.md`. Contract: `SPEC.md` (v1.1) with
 `vectors/`.
 
 ## ThingStudio version needed
@@ -16,14 +16,14 @@ released, change the bundle README to name the minimum version.
 | Task | Status |
 |---|---|
 | 1.1 HA spec | Frozen v1, then v1.1 (Mike). |
-| 1.2 Probe on Mike's HA | Done. `tools/ha-probe.py` (stdlib + paho-mqtt; credentials from `env.sh`'s variables). Results in SPEC §10. |
-| 1.3 `ts_ha` library | Done, `home-assistant/lib/ts_ha.py`. Passes the vectors under CPython. No MicroPython unit tests yet (Mike: test on the board, backfill later). |
+| 1.2 Probe on Mike's HA | Done. `home-assistant/tools/ha-probe.py` (stdlib + paho-mqtt; credentials from `env.sh`'s variables). Results in SPEC §10. |
+| 1.3 `ts_ha` library | Done, `home-assistant/home-assistant/lib/ts_ha.py`. Passes the vectors under CPython. No MicroPython unit tests yet (Mike: test on the board, backfill later). |
 | 1.4 `ha device` | Done. |
 | 1.5 Entity nodes | All six done (types `ha/...`). Select's options are a textarea, one per line (custom nodes have no list field; Mike: fine). |
 | 1.6 Shared hook generator | Not started. Each `.compile.py` is self-contained for now. |
 | 1.7 Tests | Not started. Now planned without core's fixtures (plan 1.7). |
-| 1.8 Example flow | Done: `home-assistant/examples/kitchen-sink-ha.flow.json` (kitchen-sink ESP32-C3). |
-| 1.9 Hardware pass | Partly, on the kitchen-sink C3, all good: entities appear and work, states unknown after redeploy, deleting a node removes its entity. Not yet: HA restart, broker restart, rename board, C3 heap logging, `tools/ha-cleanup.py` check, then the Freenove S3. |
+| 1.8 Example flow | Done: `home-assistant/home-assistant/examples/kitchen-sink-ha.flow.json` (kitchen-sink ESP32-C3). |
+| 1.9 Hardware pass | Partly, on the kitchen-sink C3, all good: entities appear and work, states unknown after redeploy, deleting a node removes its entity. Not yet: HA restart, broker restart, rename board, C3 heap logging, `home-assistant/tools/ha-cleanup.py` check, then the Freenove S3. |
 | 1.10 Docs | Bundle README only. Per-node pages not started. |
 
 ## Decisions (Mike)

@@ -2,14 +2,14 @@
 
 **Status: frozen v1, 2026-11-25 (Mike).** Checked on Mike's HA (§10). v1.1 (2026-11-25, Mike's permission): a
 state is unknown until the running flow reports it (§3, §5). Phase 1 task 1.1 of
-`../home-assistant-implementation-plan.md` (decision 7: the HA contract has its own spec, with vectors; Mike's
+`implementation-plan.md` (decision 7: the HA contract has its own spec, with vectors; Mike's
 permission for this spec is in the plan). After freezing, a change needs Mike's permission, like every ThingStudio
 interface spec.
 
 Sources: HA's MQTT integration docs (device-based discovery, removal, birth and last will, abbreviations), read
 2026-11-25: <https://www.home-assistant.io/integrations/mqtt/>.
 
-Who implements it: `home-assistant/lib/ts_ha.py` (the board side) and the `ha_*` nodes' compile hooks (which build
+Who implements it: `home-assistant/home-assistant/lib/ts_ha.py` (the board side) and the `ha_*` nodes' compile hooks (which build
 each component dict). Conformance: `vectors/` (§9).
 
 ## 1. Ids
@@ -122,7 +122,7 @@ published, the record is rewritten with the current set, so the next discovery m
 written only when the set changes.
 
 A flow with no HA nodes does nothing: the device stays in HA until deleted there (documented). An empty retained
-payload on the discovery topic removes the whole device (`tools/ha-cleanup.py` uses that).
+payload on the discovery topic removes the whole device (`home-assistant/tools/ha-cleanup.py` uses that).
 
 Checked (§10): omitting a component does **not** remove it; the `{"p": …}` stub does. So the record stays.
 
@@ -139,7 +139,7 @@ or "ignored". `ts_ha`'s tests in Extras run both under MicroPython.
 
 ## 10. Checked on Mike's HA (1.2, 2026-11-25)
 
-`tools/ha-probe.py` against Mike's HA and broker, as a fake board `ts-test-probe`:
+`home-assistant/tools/ha-probe.py` against Mike's HA and broker, as a fake board `ts-test-probe`:
 
 1. The abbreviated device-discovery message (§4) created one device with all six entity types, with the right
    names, device classes, units and options. Entity ids came out as `<platform>.ts_test_probe_<name>`.

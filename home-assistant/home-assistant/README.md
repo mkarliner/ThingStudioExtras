@@ -1,7 +1,7 @@
 # Home Assistant nodes for ThingStudio (work in progress)
 
 Makes a ThingStudio board a Home Assistant device over MQTT discovery. The contract is
-`docs/working-notes/home-assistant/SPEC.md` (v1, frozen 2026-11-25).
+`home-assistant/docs/working-notes/SPEC.md` in the ThingStudioExtras repo (v1, frozen 2026-11-25).
 
 Nodes: `ha device`, `ha sensor`, `ha binary sensor`, `ha switch`, `ha number`, `ha select`, `ha button`. The example uses all but `ha select`.
 

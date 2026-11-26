@@ -4,6 +4,20 @@ ThingStudioExtras holds optional add-ons for ThingStudio: custom node bundles (t
 their libraries, tools and tests. Nothing here ships with ThingStudio; a user installs a bundle by copying its folder
 into `~/.thingstudio/custom-nodes/`.
 
+## Layout: one folder per node set
+
+Each set of related nodes has its own top-level folder, and a session normally works inside one of them. Read the
+working notes of the set you're working on, not the others.
+
+```
+<set>/
+  <set>/                 the bundle: exactly what the user copies into ~/.thingstudio/custom-nodes/
+  docs/working-notes/    scoping, plan, briefings, the set's interface SPEC.md and vectors/
+  tools/  hooks/  test/  development-only, never copied
+```
+
+Repo-wide: `AGENTS.md`, `CLAUDE.md`, and `docs/core-requests/` (requests from any set).
+
 ## We are a ThingStudio user, not a ThingStudio developer (Mike, 2026-11-25)
 
 This repo exists partly to dogfood ThingStudio. Work here as an outside custom-node author would, with what an
@@ -22,7 +36,7 @@ outside author has:
   a core request.
 - **Core changes go through a request, never a direct edit.** See below.
 
-`docs/working-notes/home-assistant-phase-0-briefing.md` and Phase 0 of the HA plan are the core-side record from
+`home-assistant/docs/working-notes/phase-0-briefing.md` and Phase 0 of the HA plan are the core-side record from
 before this rule, and name core files. They are history, not a source on core.
 
 The test for any doubt: could someone who has only installed ThingStudio and read its docs do this? If not, it is
@@ -44,7 +58,7 @@ When a bundle needs something core doesn't offer, or the docs are missing, wrong
 
 ## Interface specs in this repo
 
-Each bundle's contract with the outside world has a spec, e.g. `docs/working-notes/home-assistant/SPEC.md` with
+Each bundle's contract with the outside world has a spec, e.g. `home-assistant/docs/working-notes/SPEC.md` with
 `vectors/`. Read it before changing anything it defines, run its vectors in the same change, and change the spec
 itself only with Mike's permission in the session.
 
@@ -60,5 +74,5 @@ The user guide states the ones a node author meets. These also apply here:
 
 ## Secrets
 
-`env.sh` holds Mike's HA token and broker credentials for `tools/`. It is git-ignored and must stay out of commits,
+`env.sh` holds Mike's HA token and broker credentials for `home-assistant/tools/`. It is git-ignored and must stay out of commits,
 docs, briefings and chat. Tools read credentials from the environment only.

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-# home-assistant/lib/ts_ha.py
+# home-assistant/home-assistant/lib/ts_ha.py
 #
-# The board side of docs/working-notes/home-assistant/SPEC.md (v1): Home Assistant MQTT discovery for ThingStudio's
+# The board side of home-assistant/docs/working-notes/SPEC.md (v1): Home Assistant MQTT discovery for ThingStudio's
 # ha_* nodes. One module, so its state is shared by every HA node in the flow (plan task 1.3).
 #
 #   ha_device:  configure_device(...) at setup; await ha_status(node_id) in its wait() for HA's online/offline
@@ -157,6 +157,25 @@ def _write_record(record):
         print("ts_ha: couldn't save %s (%r) -- a removed entity may stay in HA" % (RECORD_FILE, e))
 
 
+def _memory():
+    """Free memory for the discovery console line (plan 1.9: C3 heap before and after discovery)."""
+    text = ""
+    try:
+        import gc
+        gc.collect()
+        text += ", MicroPython %d KB free" % (gc.mem_free() // 1024)
+    except Exception:
+        pass
+    try:
+        import esp32
+        info = esp32.idf_heap_info(esp32.HEAP_DATA)
+        text += ", ESP-IDF heap %d KB free, largest block %d KB" % (
+            sum(h[1] for h in info) // 1024, max(h[2] for h in info) // 1024)
+    except Exception:
+        pass
+    return text
+
+
 def chip_id():
     import machine
     return "".join("%02x" % b for b in machine.unique_id())
@@ -184,7 +203,9 @@ class _Device:
 
     async def announce(self):
         topic, payload, after = build_discovery(self.chip, self.prefix, self.info, _components, self.record)
-        await self.client.publish(self.node_id, topic, _dumps(payload).encode(), True, 1)
+        data = _dumps(payload).encode()
+        await self.client.publish(self.node_id, topic, data, True, 1)
+        print("ts_ha: discovery sent, %d entities, %d bytes%s" % (len(_components), len(data), _memory()))
         if after != self.record:
             _write_record(after)
             self.record = after
