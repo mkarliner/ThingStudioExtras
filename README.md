@@ -10,7 +10,7 @@ it needs.
 | Set | Nodes | Status | ThingStudio |
 |---|---|---|---|
 | [Home Assistant](home-assistant/) | `ha device`, `ha sensor`, `ha binary sensor`, `ha switch`, `ha number`, `ha select`, `ha button` | work in progress | v0.14.0 or later |
-| [Wake on LAN](wake-on-lan/) | `wol` | work in progress | `main` @ a57d686b or newer |
+| [Wake on LAN](wake-on-lan/) | `wol` | work in progress | v0.14.0 or newer |
 
 Custom nodes need the ThingStudio App; ThingStudio Web has none.
 

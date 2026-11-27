@@ -9,9 +9,8 @@ Copy this folder into `~/.thingstudio/custom-nodes/`. The node appears in the pa
 **network**; it needs a board with the `wifi` capability (on other boards the palette grays it out
 and the compile refuses it).
 
-ThingStudio build: `main` at `a57d686b85dc74ae7e3f7240536ad3c40d406fe9` (2026-11-27) or newer — the
-build in which the user guide documents a custom node's use of the flow's WiFi
-(custom-nodes, "The flow's WiFi: ts_wifi").
+ThingStudio App v0.14.0 or newer — the release in which the user guide documents a custom node's use of the
+flow's WiFi (custom-nodes, "The flow's WiFi: ts_wifi").
 
 ## Use
 

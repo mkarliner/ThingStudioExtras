@@ -116,7 +116,8 @@ permission) if the board says otherwise.
 bash wake-on-lan/test/setup.sh $HOME/work
 ```
 
-It builds ThingStudio (`wake-on-lan/THINGSTUDIO_VERSION`: `main` at a57d686b) and MicroPython
+It builds ThingStudio (`wake-on-lan/THINGSTUDIO_VERSION`: v0.14.0 at 416f886f, which postdates the ts_wifi
+docs on main) and MicroPython
 (`wake-on-lan/test/MICROPYTHON_VERSION`: v1.29.0 at 0fd6c573) by full commit into the work folder, never in
 the shared folder (it refuses a folder inside the repository), and fails on a checkout that is anywhere else.
 It needs git, Python 3.11+, Node.js 22 and `make` (the device shell has 3.13.5, Node 22.23.4 and make; no
@@ -178,8 +179,8 @@ cases, all pass. Run them after any change to the bundle or the vectors.
 
 ## Toolchain this session used (named per AGENTS.md, briefings)
 
-- Built in `$HOME/work` (outside the repository and the shared folder): ThingStudio `main` at
-  a57d686b85dc74ae7e3f7240536ad3c40d406fe9 (git clone + `make`: npm from its committed lockfile,
+- Built in `$HOME/work` (outside the repository and the shared folder): ThingStudio v0.14.0 at
+  416f886f632bda1cd1cfa854afe78998bceaa8a4 (git clone + `make`: npm from its committed lockfile,
   `pip --require-hashes` into its own `.venv`, `npm run build:cli`) and MicroPython v1.29.0 at
   0fd6c573ea815774668bbb16b8e197c8822368b2 (git clone + submodules at the pin's recorded commits,
   `make -C ports/unix`). Nothing was installed into `~/.thingstudio`; `make` linked

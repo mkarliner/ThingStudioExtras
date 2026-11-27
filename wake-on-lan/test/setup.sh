@@ -26,7 +26,7 @@ case "$WORK" in
         ;;
 esac
 
-pin() { sed -n "s/^$1: *//p" "$2"; }
+pin() { sed -n "s/^$1: \([0-9a-f]\{40\}\).*/\1/p" "$2"; }
 
 TS_PIN="$(pin commit "$SET_DIR/THINGSTUDIO_VERSION")"
 MP_PIN="$(pin commit "$SET_DIR/test/MICROPYTHON_VERSION")"

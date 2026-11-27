@@ -5,7 +5,7 @@ a board can wake a computer on its network. Small enough to read start to finish
 writing your first custom node.
 
 **Status:** work in progress: compile-checked and vector-tested; the board pass is still to do · **ThingStudio:**
-`main` @ a57d686b (2026-11-27) or newer · **Nodes:** `wol`
+v0.14.0 or newer · **Nodes:** `wol`
 
 | Doc | For |
 |---|---|
