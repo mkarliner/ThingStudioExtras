@@ -6,7 +6,8 @@ Filed: mkarliner/ThingStudio#21 (2026-11-27).
 Answered in the user guide on 2026-11-27: commit a57d686b85dc74ae7e3f7240536ad3c40d406fe9 (main)
 added "The flow's WiFi: ts_wifi" and "The flow's MQTT client: ts_mqtt" to custom-nodes — the
 configRef field, the compile hook, `ensure_station`'s arguments and semantics, `unmanaged`, and the
-network-down failure. This set is developed against that build (see ../THINGSTUDIO_VERSION).
+network-down failure. This set is developed against that build (see ../THINGSTUDIO_VERSION). The
+issue was closed 2026-11-27.
 
 ## What we were trying to do
 

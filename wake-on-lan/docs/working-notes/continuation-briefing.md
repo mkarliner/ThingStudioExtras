@@ -112,7 +112,7 @@ all pass. Run them after any change to the bundle or the vectors.
 - **The general network-node pattern was undocumented until this afternoon.** Request
   `2026-11-27-wifi-for-network-nodes` was filed as mkarliner/ThingStudio#21 (morning) and answered in the
   user guide the same day (commit a57d686b): "The flow's WiFi: ts_wifi" and "The flow's MQTT client: ts_mqtt"
-  under custom-nodes. This set is pinned to that commit; the issue is still open — Mike may close it.
+  under custom-nodes. This set is pinned to that commit; the issue was closed 2026-11-27.
 - **Flow files namespace their built-in types:** `thingstudio/timer`, `thingstudio/function`, … The
   `--describe` output shows the short name (`Type: timer`), which is not the string a flow file holds;
   writing the short name fails the check with "no custom node package defines type". The strings the flow
@@ -130,7 +130,7 @@ all pass. Run them after any change to the bundle or the vectors.
 
 | Request | Type | Status |
 |---|---|---|
-| `2026-11-27-wifi-for-network-nodes` | docs (or core) | Filed: mkarliner/ThingStudio#21; answered in the user guide 2026-11-27 (commit a57d686b). |
+| `2026-11-27-wifi-for-network-nodes` | docs (or core) | Filed: mkarliner/ThingStudio#21; answered in the user guide 2026-11-27 (commit a57d686b); closed 2026-11-27. |
 
 ## How to resume
 
@@ -143,7 +143,6 @@ all pass. Run them after any change to the bundle or the vectors.
 4. Close out: mention the board pass in the bundle `README.md` if it earns a note, and add `tools/` only if
    the host-side listener stays (a dev tool, never copied, and a `THIRD-PARTY.md` line if it imports
    anything).
-5. `mkarliner/ThingStudio#21` is still open; it can be closed once Mike confirms the guide covers it.
 
 ## Toolchain this session used (named per AGENTS.md, briefings)
 
