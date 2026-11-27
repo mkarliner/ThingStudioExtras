@@ -32,7 +32,8 @@ wake-on-lan/
     lib/wol_packet.py     the pure functions, testable under MicroPython and CPython alike
     examples/wol-wake.flow.json
     README.md
-  docs/working-notes/     this briefing, SPEC.md, vectors/
+  docs/                   SPEC.md, vectors/, how-it-works.md
+  docs/working-notes/     this briefing
   test/                   setup.sh, compile_test.py, vectors_test.py; THINGSTUDIO_VERSION in the set root
   tools/                  wol-listen.py (host-side board-pass listener, never copied)
 ```

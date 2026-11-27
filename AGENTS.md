@@ -11,13 +11,21 @@ working notes of the set you're working on, not the others.
 
 ```
 <set>/
+  README.md              the set's landing page (repo view): what it is, status, where everything is
+  THINGSTUDIO_VERSION    the build the set is developed and tested against
   <set>/                 the bundle: exactly what the user copies into ~/.thingstudio/custom-nodes/
-  docs/working-notes/    scoping, plan, briefings, the set's interface SPEC.md and vectors/
+    README.md            user docs; docs/<node>.md per node when the set is too big for one page
+    examples/
+  docs/
+    how-it-works.md      the worked example for node authors
+    SPEC.md  vectors/    the set's interface contract, when it has one
+    working-notes/       scoping, plan, briefings: history, not docs
   tools/  hooks/  test/  development-only, never copied
 ```
 
-Repo-wide: `AGENTS.md`, `CLAUDE.md`, `THIRD-PARTY.md` (the third-party ledger), and `docs/core-requests/`
-(requests from any set).
+Repo-wide: `README.md` (what Extras is, and the index of sets), `AGENTS.md`, `CLAUDE.md`, `THIRD-PARTY.md` (the
+third-party ledger), `docs/core-requests/` (requests from any set), `docs/templates/` (skeletons for a set's docs) and
+`docs/check-docs.py` (the documentation check).
 
 ## We are a ThingStudio user, not a ThingStudio developer (Mike, 2026-11-25)
 
@@ -59,9 +67,40 @@ When a bundle needs something core doesn't offer, or the docs are missing, wrong
 
 ## Interface specs in this repo
 
-Each bundle's contract with the outside world has a spec, e.g. `home-assistant/docs/working-notes/SPEC.md` with
+Each bundle's contract with the outside world has a spec, e.g. `home-assistant/docs/SPEC.md` with
 `vectors/`. Read it before changing anything it defines, run its vectors in the same change, and change the spec
 itself only with Mike's permission in the session.
+
+## Documentation (Mike, 2026-11-27)
+
+Each set is documented so it stands alone, and so it can serve as a model for someone writing their own custom nodes.
+A set writes for three readers, in three places:
+
+| Reader | Needs | Where |
+|---|---|---|
+| **User:** installs the nodes and uses them | install, minimum ThingStudio, what each node does, a working example, every failure and what to do about it, limits | the bundle: `<set>/<set>/README.md`, plus `<set>/<set>/docs/<node>.md` per node in a bigger set |
+| **Author:** building their own nodes, using this set as the example | how the set is built and why: each file's job, the user-guide sections it relies on, design decisions, how it's tested | `<set>/docs/how-it-works.md` |
+| **Maintainer or agent** | scoping, plan, briefings | `<set>/docs/working-notes/`: history, and may be stale |
+
+`<set>/README.md` is the landing page for someone browsing the repo: two or three sentences, status, minimum
+ThingStudio, and links to the three above. The skeletons are in `docs/templates/`; keep their headings so that sets
+can be compared side by side.
+
+Rules:
+
+- **Standalone.** A set's docs don't need another set or the repo docs to make sense. The bundle's docs must still work
+  once the folder is copied into `custom-nodes/`: link to https://docs.thingstudio.net/ and upstream docs, never with
+  a relative path out of the bundle.
+- **Every node is documented.** The descriptor has a `description` and a `help` on every property except a
+  `configRef` (user guide, *Writing custom nodes*, "The descriptor"); the user docs name each node and give its
+  inputs, outputs, properties and every failure message. The editor shows the first two; the docs carry what doesn't
+  fit in a tooltip.
+- **Cite the user guide by page and section**, as published. `how-it-works.md` explains only what an author with the
+  guide could do; anything that needed more is a core request, not an explanation.
+- **Docs change in the same commit as the behaviour,** including the minimum ThingStudio line and the root `README.md`
+  index when a set is added or its status changes.
+- **Check:** `python3 docs/check-docs.py` from the repository root. Its KNOWN GAP entries are reported without failing,
+  and fail once fixed, so they get removed.
 
 ## Engineering rules carried over from ThingStudio
 

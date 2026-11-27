@@ -1,4 +1,4 @@
-# wake-on-lan vectors: run lib/wol_packet.py against docs/working-notes/vectors/values.json.
+# wake-on-lan vectors: run lib/wol_packet.py against docs/vectors/values.json.
 # From the repository root, under CPython and the pinned MicroPython's unix port:
 #   python3 wake-on-lan/test/vectors_test.py
 #   MICROPYPATH=wake-on-lan/wake-on-lan/lib micropython wake-on-lan/test/vectors_test.py
@@ -32,7 +32,7 @@ def expect_error(name, fn, value, want):
 
 
 with open(sys.argv[1] if len(sys.argv) > 1 else
-          'wake-on-lan/docs/working-notes/vectors/values.json') as f:
+          'wake-on-lan/docs/vectors/values.json') as f:
     vectors = json.load(f)
 
 total = 0
