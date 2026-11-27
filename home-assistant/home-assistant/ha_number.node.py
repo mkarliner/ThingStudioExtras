@@ -13,4 +13,4 @@ async def wait(properties):
 
 
 async def emit(properties):
-    return {'payload': _last['value']}
+    return {'payload': _last['value'], 'topic': ''}

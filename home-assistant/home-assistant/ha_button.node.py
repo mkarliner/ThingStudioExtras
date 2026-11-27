@@ -8,4 +8,4 @@ async def wait(properties):
 
 
 async def emit(properties):
-    return {'payload': True}
+    return {'payload': True, 'topic': ''}
