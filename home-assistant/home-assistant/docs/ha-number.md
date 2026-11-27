@@ -29,7 +29,7 @@ Wire the output to what it sets, a **pwm out** say, and the real value back into
 
 ## Behavior
 
-The number shows as unknown until the flow sends it a value.
+The number shows as unknown until the flow sends it a value. To show a value from the moment the flow starts, see "Showing a value from the start" in the bundle README.
 
 **Input not wired:** the node confirms each change itself, and the compile warns about it, as for
 [ha switch](ha-switch.md#behavior).

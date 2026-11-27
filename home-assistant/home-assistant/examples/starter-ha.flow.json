@@ -104,6 +104,14 @@
    "properties": {
     "fullMessage": false
    }
+  },
+  {
+   "id": "testinit",
+   "type": "thingstudio/startup",
+   "properties": {
+    "payloadType": "bool",
+    "payloadValue": "false"
+   }
   }
  ],
  "edges": [
@@ -160,79 +168,91 @@
    0,
    "hellodbg",
    0
+  ],
+  [
+   "testinit",
+   0,
+   "testfn",
+   0
   ]
  ],
  "layout": {
   "hadev": {
    "pos": [
-    80,
+    300,
     80
    ]
   },
   "hadbg": {
    "pos": [
-    300,
+    520,
     80
    ]
   },
   "tick": {
    "pos": [
-    80,
+    300,
     180
    ]
   },
   "upfn": {
    "pos": [
-    300,
+    520,
     180
    ]
   },
   "haup": {
    "pos": [
-    520,
+    740,
     180
    ]
   },
   "memfn": {
    "pos": [
-    300,
+    520,
     250
    ]
   },
   "hamem": {
    "pos": [
-    520,
+    740,
     250
    ]
   },
   "hatest": {
    "pos": [
-    520,
+    740,
     350
    ]
   },
   "testfn": {
    "pos": [
-    300,
+    520,
     350
    ]
   },
   "testdbg": {
    "pos": [
-    520,
+    740,
     420
    ]
   },
   "hahello": {
    "pos": [
-    80,
+    300,
     520
    ]
   },
   "hellodbg": {
    "pos": [
-    300,
+    520,
     520
+   ]
+  },
+  "testinit": {
+   "pos": [
+    80,
+    400
    ]
   }
  },

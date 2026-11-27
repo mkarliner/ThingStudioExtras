@@ -30,7 +30,7 @@
         "lower": 45000,
         "upper": 46000,
         "sense": "outside",
-        "pollMs": 0
+        "pollMs": 60000
       }
     },
     {
@@ -86,9 +86,9 @@
       "id": "ledfn",
       "type": "thingstudio/function",
       "properties": {
-        "code": "on = bool(msg['payload'])\nflow.set('on', on)\nb = flow.get('bright', 32)\nmsg['payload'] = (b << 16 | b << 8 | b) if on else 0\nreturn msg",
-        "outputCount": 1,
-        "label": "on/off colour"
+        "code": "on = bool(msg['payload'])\nflow.set('on', on)\nb = flow.get('bright', 32)\nreturn [{'payload': (b << 16 | b << 8 | b) if on else 0}, {'payload': on}]",
+        "outputCount": 2,
+        "label": "on/off colour, state"
       }
     },
     {
@@ -143,9 +143,9 @@
       "id": "brightfn",
       "type": "thingstudio/function",
       "properties": {
-        "code": "b = int(msg['payload'])\nflow.set('bright', b)\nmsg['payload'] = (b << 16 | b << 8 | b) if flow.get('on', False) else 0\nreturn msg",
-        "outputCount": 1,
-        "label": "brightness"
+        "code": "b = int(msg['payload'])\nflow.set('bright', b)\nreturn [{'payload': (b << 16 | b << 8 | b) if flow.get('on', False) else 0}, {'payload': b}]",
+        "outputCount": 2,
+        "label": "brightness, state"
       }
     },
     {
@@ -169,6 +169,30 @@
         "code": "msg['payload'] = msg['payload']['percent']\nreturn msg",
         "outputCount": 1,
         "label": "percent"
+      }
+    },
+    {
+      "id": "btninit",
+      "type": "thingstudio/startup",
+      "properties": {
+        "payloadType": "bool",
+        "payloadValue": "false"
+      }
+    },
+    {
+      "id": "ledinit",
+      "type": "thingstudio/startup",
+      "properties": {
+        "payloadType": "bool",
+        "payloadValue": "false"
+      }
+    },
+    {
+      "id": "brightinit",
+      "type": "thingstudio/startup",
+      "properties": {
+        "payloadType": "number",
+        "payloadValue": "32"
       }
     }
   ],
@@ -244,12 +268,42 @@
       0,
       "haknob",
       0
+    ],
+    [
+      "btninit",
+      0,
+      "habtn",
+      0
+    ],
+    [
+      "ledinit",
+      0,
+      "ledfn",
+      0
+    ],
+    [
+      "ledfn",
+      1,
+      "haled",
+      0
+    ],
+    [
+      "brightinit",
+      0,
+      "brightfn",
+      0
+    ],
+    [
+      "brightfn",
+      1,
+      "habright",
+      0
     ]
   ],
   "layout": {
     "hadev": {
       "pos": [
-        60,
+        220,
         60
       ],
       "size": [
@@ -259,7 +313,7 @@
     },
     "hadbg": {
       "pos": [
-        260,
+        420,
         60
       ],
       "size": [
@@ -269,7 +323,7 @@
     },
     "knob": {
       "pos": [
-        60,
+        220,
         140
       ],
       "size": [
@@ -279,7 +333,7 @@
     },
     "haknob": {
       "pos": [
-        400,
+        560,
         140
       ],
       "size": [
@@ -289,7 +343,7 @@
     },
     "btn": {
       "pos": [
-        60,
+        220,
         220
       ],
       "size": [
@@ -299,7 +353,7 @@
     },
     "btnfn": {
       "pos": [
-        220,
+        380,
         220
       ],
       "size": [
@@ -309,7 +363,7 @@
     },
     "habtn": {
       "pos": [
-        400,
+        560,
         220
       ],
       "size": [
@@ -319,7 +373,7 @@
     },
     "haled": {
       "pos": [
-        60,
+        220,
         300
       ],
       "size": [
@@ -329,7 +383,7 @@
     },
     "ledfn": {
       "pos": [
-        220,
+        380,
         300
       ],
       "size": [
@@ -339,7 +393,7 @@
     },
     "pixel": {
       "pos": [
-        400,
+        560,
         380
       ],
       "size": [
@@ -349,7 +403,7 @@
     },
     "tick": {
       "pos": [
-        60,
+        220,
         620
       ],
       "size": [
@@ -359,7 +413,7 @@
     },
     "tempfn": {
       "pos": [
-        220,
+        380,
         620
       ],
       "size": [
@@ -369,7 +423,7 @@
     },
     "hatemp": {
       "pos": [
-        400,
+        560,
         620
       ],
       "size": [
@@ -379,7 +433,7 @@
     },
     "habright": {
       "pos": [
-        60,
+        220,
         460
       ],
       "size": [
@@ -389,7 +443,7 @@
     },
     "brightfn": {
       "pos": [
-        220,
+        380,
         460
       ],
       "size": [
@@ -399,7 +453,7 @@
     },
     "hahello": {
       "pos": [
-        60,
+        220,
         540
       ],
       "size": [
@@ -409,7 +463,7 @@
     },
     "hellodbg": {
       "pos": [
-        260,
+        420,
         540
       ],
       "size": [
@@ -419,8 +473,38 @@
     },
     "knobfn": {
       "pos": [
-        220,
+        380,
         140
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "btninit": {
+      "pos": [
+        60,
+        260
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "ledinit": {
+      "pos": [
+        60,
+        340
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "brightinit": {
+      "pos": [
+        60,
+        500
       ],
       "size": [
         130,

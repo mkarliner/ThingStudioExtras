@@ -22,10 +22,33 @@ Phase 1, everything but the hardware, is done and committed (`ad57a4a` and befor
 - Three example flows: `starter-ha` (any WiFi board, no wiring), `kitchen-sink-ha` (C3), `freenove-s3-ha` (S3).
 - Docs: the bundle README (what you need, a route for ThingStudio newcomers, MQTT setup in HA, use, removal,
   limits) and a page per node in `home-assistant/home-assistant/docs/`.
-- Tests (2026-11-27, at a57d686b): compile 29 cases, 0 failed, no known gaps; vectors 48 checks; mqtt 28 checks;
+- Tests (2026-11-27, at 416f886f = v0.14.0): compile 29 cases, 0 failed, no known gaps; vectors 48 checks; mqtt 30 checks;
   vectors and mqtt under MicroPython and CPython.
 
 Phase 2 was walked on paper. Its main gap was having no release to install, which v0.14.0 now closes.
+
+## Progress, 2026-11-27 (late evening)
+
+- Steps 1 and 2 below are done: pin at v0.14.0 (`416f886f`), README names the release, Phase 2 walk updated.
+- **Examples now start every entity at a known value** (Mike's idea): a core `startup` node (user guide, node
+  reference, *startup*) per switch, number, select and event-fed binary sensor, and the real state wired back, so
+  the two "input not wired" warnings per board example are gone (compile tests expect 0 now). The kitchen-sink knob
+  polls once a minute. Bundle README: "Showing a value from the start"; node pages point to it. A state sent before
+  the first connect is held by `ts_mqtt` and the first connect sends no `None` over it: new mqtt test
+  `state_before_first_connect`. How `on_connect` orders against a waiting publish is in the guide at `main`
+  0ce2f4ac (after v0.14.0; *Writing custom nodes*, `ts_mqtt`): on the first connect the callbacks finish first; after
+  a reconnect there's no order. `ts_ha` doesn't depend on either (retained states, `reported` set before the
+  await, no `None` after a reconnect).
+- **1.9 on the C3 so far** (v0.14.0 App, About box: built for runtime 15.2.0; board reflashed with the custom image):
+  deploy OK on the second try (the first, straight after flashing, lost the board mid-library); all six entities
+  present and working both ways; unplug gives unavailable. Heap: empty 153 / 148 / 112 KB (MicroPython / IDF /
+  largest block), flow running 104 / 43 / 36, after discovery 87 / 35 / 28. These were with the examples *before*
+  the startup change; redeploy the revised `kitchen-sink-ha` (already copied into `~/.thingstudio/custom-nodes/`).
+- New request: `docs/core-requests/2026-11-27-thingstudio-spelling.md` (core), answered by the core session: About
+  fixed on `main` (next release), the images' `chipType` at the next runtime bump; nothing to file. The
+  "targets 15.1.0" console line was an old editor tab, not a bug, and was withdrawn.
+- Deploying over a running flow on the C3 now gives a large power-cycle popup in the editor, so no request for that.
+- `~/.thingstudio` is attached to this project too: the session copies the bundle into `custom-nodes/` after changes.
 
 ## Next, in order
 
@@ -96,6 +119,7 @@ reading the guide, but nothing else from the core repo may be read.
 | `--describe` ignores custom nodes | #26 | open |
 | function into typed inputs | not filed | Mike to file |
 | HA bundle pointer in the guide | not filed | after 1.9, with a public URL |
+| "Thingstudio" in About and `chipType` | none needed | fixed on `main` / next runtime bump: check then |
 
 #21 (wake-on-lan's WiFi question), #23 and #24 are closed. The wake-on-lan set has its own session and notes: leave
 `wake-on-lan/` alone.

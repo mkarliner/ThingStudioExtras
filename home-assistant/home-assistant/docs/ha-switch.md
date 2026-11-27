@@ -25,7 +25,7 @@ shows what actually happened, not just what was asked for.
 
 ## Behavior
 
-The switch shows as unknown until the flow sends it a state.
+The switch shows as unknown until the flow sends it a state. To show a value from the moment the flow starts, see "Showing a value from the start" in the bundle README.
 
 **Input not wired:** the node confirms each command itself: Home Assistant shows the switch on as soon as it's turned
 on, whether or not anything happened. The compile warns about it. Fine for a quick test; wire the real state back

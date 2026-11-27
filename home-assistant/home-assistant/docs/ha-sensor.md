@@ -44,6 +44,8 @@ Needs an **ha device** node in the flow.
 Each message sends the value to Home Assistant at once. The broker keeps the latest, so a Home Assistant that
 restarts shows it straight away.
 
+The sensor shows as unknown until the flow sends it a value: see "Showing a value from the start" in the bundle README.
+
 ## Errors
 
 - **`payload` is `True` or `False`.** The node raises `a sensor shows numbers or text -- use ha binary sensor for

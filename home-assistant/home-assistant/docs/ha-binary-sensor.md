@@ -20,6 +20,9 @@ false (`False`, `0`, empty text). `None` sends nothing.
 Each message sends on or off to Home Assistant at once. The broker keeps the latest, so a Home Assistant that
 restarts shows it straight away.
 
+The binary sensor shows as unknown until the flow sends it a value. For one fed by events, such as a button, wire a
+**startup** node with `false` into it: see "Showing a value from the start" in the bundle README.
+
 ## Errors
 
 These stop the compile: no **ha device** in the flow, an empty name.

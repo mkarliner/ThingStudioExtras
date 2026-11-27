@@ -85,6 +85,20 @@ async def first_connect():
     check('device-level publishes are under the ha device node id', set(p[0] for p in c.published), {'dev'})
 
 
+
+async def state_before_first_connect():
+    """A startup node reports a state as the flow starts, before WiFi and the broker are up. The state is kept, goes
+    out once connected, and the first connect sends no None over it (SPEC v1.1, §3)."""
+    fresh()
+    c = flow()
+    await ts_ha.publish_state('lamp', False)
+    topics = [p[0] for p in by_topic(c)]
+    check('a state reported before the first connect: online, discovery, None only for the unreported sensor, '
+          'then the state', topics,
+          [BASE + '/availability', 'homeassistant/device/ts_' + CHIP + '/config', BASE + '/temp/state',
+           BASE + '/lamp/state'])
+    check('the early state is the value, not None', by_topic(c)[-1], (BASE + '/lamp/state', b'OFF', True, 0))
+
 async def states_and_commands():
     fresh()
     c = flow()
@@ -192,6 +206,7 @@ async def ha_device_node(folder):
 
 async def main(folder):
     await first_connect()
+    await state_before_first_connect()
     await states_and_commands()
     await ha_restart_and_reconnect()
     await redeploy()

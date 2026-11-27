@@ -23,7 +23,7 @@ function node's result can be wired straight in.
 
 ## Behavior
 
-The select shows as unknown until the flow sends it an option.
+The select shows as unknown until the flow sends it an option. To show a value from the moment the flow starts, see "Showing a value from the start" in the bundle README.
 
 **Input not wired:** the node confirms each choice itself, and the compile warns about it, as for
 [ha switch](ha-switch.md#behavior).

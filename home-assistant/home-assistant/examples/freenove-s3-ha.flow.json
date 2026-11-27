@@ -156,6 +156,48 @@
       "properties": {
         "fullMessage": false
       }
+    },
+    {
+      "id": "brightfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "return msg",
+        "outputCount": 1,
+        "label": "report it back"
+      }
+    },
+    {
+      "id": "brightinit",
+      "type": "thingstudio/startup",
+      "properties": {
+        "payloadType": "number",
+        "payloadValue": "1"
+      }
+    },
+    {
+      "id": "nightinit",
+      "type": "thingstudio/startup",
+      "properties": {
+        "payloadType": "bool",
+        "payloadValue": "false"
+      }
+    },
+    {
+      "id": "modefn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "return msg",
+        "outputCount": 1,
+        "label": "report it back"
+      }
+    },
+    {
+      "id": "modeinit",
+      "type": "thingstudio/startup",
+      "properties": {
+        "payloadType": "string",
+        "payloadValue": "normal"
+      }
     }
   ],
   "edges": [
@@ -226,125 +268,203 @@
       0
     ],
     [
+      "hahello",
+      0,
+      "hellodbg",
+      0
+    ],
+    [
+      "habright",
+      0,
+      "brightfn",
+      0
+    ],
+    [
+      "brightfn",
+      0,
+      "habright",
+      0
+    ],
+    [
+      "brightinit",
+      0,
+      "backlight",
+      0
+    ],
+    [
+      "brightinit",
+      0,
+      "brightfn",
+      0
+    ],
+    [
+      "nightinit",
+      0,
+      "nightfn",
+      0
+    ],
+    [
       "hamode",
+      0,
+      "modefn",
+      0
+    ],
+    [
+      "modefn",
+      0,
+      "hamode",
+      0
+    ],
+    [
+      "modefn",
       0,
       "modedbg",
       0
     ],
     [
-      "hahello",
+      "modeinit",
       0,
-      "hellodbg",
+      "modefn",
       0
     ]
   ],
   "layout": {
     "hadev": {
       "pos": [
-        80,
+        300,
         80
       ]
     },
     "hadbg": {
       "pos": [
-        300,
+        520,
         80
       ]
     },
     "habright": {
       "pos": [
-        80,
+        300,
         180
       ]
     },
     "backlight": {
       "pos": [
-        300,
+        520,
         180
       ]
     },
     "hanight": {
       "pos": [
-        520,
+        740,
         280
       ]
     },
     "nightfn": {
       "pos": [
-        300,
+        520,
         280
       ]
     },
     "nightdbg": {
       "pos": [
-        520,
+        740,
         350
       ]
     },
     "tick": {
       "pos": [
-        80,
+        300,
         450
       ]
     },
     "tempfn": {
       "pos": [
-        300,
+        520,
         450
       ]
     },
     "hatemp": {
       "pos": [
-        520,
+        740,
         450
       ]
     },
     "hotfn": {
       "pos": [
-        520,
+        740,
         520
       ]
     },
     "hahot": {
       "pos": [
-        740,
+        960,
         520
       ]
     },
     "memfn": {
       "pos": [
-        300,
+        520,
         520
       ]
     },
     "hamem": {
       "pos": [
-        520,
+        740,
         590
       ]
     },
     "hamode": {
       "pos": [
-        80,
+        300,
         690
       ]
     },
     "modedbg": {
       "pos": [
-        300,
-        690
+        740,
+        740
       ]
     },
     "hahello": {
       "pos": [
-        80,
+        300,
         790
       ]
     },
     "hellodbg": {
       "pos": [
-        300,
+        520,
         790
+      ]
+    },
+    "brightfn": {
+      "pos": [
+        520,
+        230
+      ]
+    },
+    "brightinit": {
+      "pos": [
+        80,
+        230
+      ]
+    },
+    "nightinit": {
+      "pos": [
+        80,
+        330
+      ]
+    },
+    "modefn": {
+      "pos": [
+        520,
+        740
+      ]
+    },
+    "modeinit": {
+      "pos": [
+        80,
+        740
       ]
     }
   },

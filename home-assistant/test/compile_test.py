@@ -83,12 +83,9 @@ def many_entities(count):
 # warning_count (exact, optional), gap (a reason: KNOWN GAP)
 CASES = [
     ('the kitchen-sink example', EXAMPLE,
-     {'ok': True, 'warnings': ["node haled): ha switch 'LED': input not wired",
-                               "node habright): ha number 'LED brightness': input not wired"], 'warning_count': 2}),
+     {'ok': True, 'warning_count': 0}),
     ('the Freenove S3 example', os.path.join(BUNDLE, 'examples', 'freenove-s3-ha.flow.json'),
-     {'ok': True, 'board': 'board:freenove-s3-4in',
-      'warnings': ["ha number 'Screen brightness': input not wired", "ha select 'Mode': input not wired"],
-      'warning_count': 2}),
+     {'ok': True, 'board': 'board:freenove-s3-4in', 'warning_count': 0}),
     ('the starter example, on a classic ESP32', os.path.join(BUNDLE, 'examples', 'starter-ha.flow.json'),
      {'ok': True, 'board': 'processor:esp32', 'warning_count': 0}),
     ('the starter example, on a Pico W', os.path.join(BUNDLE, 'examples', 'starter-ha.flow.json'),
