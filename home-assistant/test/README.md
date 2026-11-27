@@ -16,6 +16,8 @@ with a long timeout, not in the background.
 
 ## Compile tests: `compile_test.py`
 
+First checks that the generated hooks are current (`../tools/build-hooks.py --check`, plan 1.6).
+
 Runs flows (the kitchen-sink example plus small flows built in the script) through an installed ThingStudio's
 `thingstudio-compile`, with the bundle copied into a scratch `custom-nodes` folder, and checks the errors and
 warnings. Stdlib Python 3. Point `THINGSTUDIO_COMPILE` at the `thingstudio-compile.mjs` that `setup.sh` built (user guide, "Check a flow
@@ -30,7 +32,8 @@ it passes, so the case gets promoted.
 
 ## SPEC vectors: `vectors_test.py`
 
-`ts_ha`'s pure functions against `../docs/working-notes/vectors/` (SPEC §9), under the MicroPython unix port
+`ts_ha`'s pure functions against `../docs/working-notes/vectors/` (SPEC §9), and `ha device`'s hook's JSON sizing
+against the board's own `json.dumps` (SPEC §8), under the MicroPython unix port
 (`setup.sh` builds it without frozen modules, so `extmod` on the path supplies `asyncio`), with `doubles/runtime.py`
 written from the user guide:
 

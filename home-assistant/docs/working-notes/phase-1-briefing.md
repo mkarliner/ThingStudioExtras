@@ -1,4 +1,4 @@
-# Home Assistant bundle — Phase 1 briefing (updated 2026-11-26, afternoon)
+# Home Assistant bundle — Phase 1 briefing (updated 2026-11-27, evening)
 
 **For the next session.** Read the repo's `AGENTS.md` first (Extras works as a ThingStudio user; supply chain
 caution), then this. Plan: `implementation-plan.md`. Contract: `SPEC.md` (v1.1) with `vectors/`. Layout: this node
@@ -17,8 +17,12 @@ and builds both in the work folder, never in the shared folder (it refuses a fol
 ThingStudio is built by the user guide's "From source" route, with CPython 3.12.16 from the device shell's own `uv`:
 the device shell has 3.10 and ThingStudio needs 3.11+.
 
-- Each device-shell call runs in its own sandbox: a `nohup ... &` job is killed when the call returns. Run
+- Each device-shell call runs in its own sandbox: a `nohup ... &` job is killed when the call returns (a background
+  `setup.sh` on 2026-11-27 left nothing useful; rerun in the foreground). Run
   `setup.sh` in the foreground with `timeout_ms` 180000 (about 35 s with warm caches on 2026-11-27).
+- The GitHub API (token in `env.sh`) reads user-guide pages at a commit without a clone:
+  `GET /repos/mkarliner/ThingStudio/contents/docs/user-guide/<page>?ref=<commit>`. Creating issues from the session
+  may be refused by the sandbox (2026-11-27); hand them to Mike.
 - Read only `docs/user-guide/` in the ThingStudio clone. Nothing else from it. (Exception on 2026-11-27, at Mike's
   request: its `AGENTS.md` and `CLAUDE.md`, for the supply-chain rules now in ours.)
 - The HA tools' one package: `pip install --require-hashes --only-binary :all: --no-deps -r
@@ -36,8 +40,12 @@ MICROPYPATH=home-assistant/test/doubles:home-assistant/home-assistant/lib:$HOME/
 MICROPYPATH=home-assistant/test/doubles:home-assistant/home-assistant/lib:$HOME/work/mp/extmod $HOME/work/mp/ports/unix/build-standard/micropython home-assistant/test/mqtt_test.py home-assistant/home-assistant
 ```
 
-From the repository root. On 2026-11-27 at a57d686b: compile 22 cases, 0 failed, 1 known gap; vectors 44 checks,
-0 failed; mqtt 28 checks, 0 failed (MicroPython and CPython). Run them after any change to the bundle or the vectors.
+From the repository root. On 2026-11-27 (evening) at a57d686b: compile 27 cases, 0 failed, no known gaps (the first
+case is `build-hooks.py --check`); vectors 48 checks, 0 failed (includes the hook's JSON sizing against the board's
+`json.dumps`); mqtt 28 checks, 0 failed. Vectors and mqtt pass under MicroPython and CPython.
+
+After editing anything in `hooks/` or the `ts_ha` definitions a hook includes, run
+`python3 home-assistant/tools/build-hooks.py` and commit the regenerated `.compile.py` files. Run them after any change to the bundle or the vectors.
 
 ## Where things stand
 
@@ -46,13 +54,13 @@ From the repository root. On 2026-11-27 at a57d686b: compile 22 cases, 0 failed,
 | 1.1 HA spec | Frozen v1, then v1.1 (Mike). |
 | 1.2 Probe on Mike's HA | Done. `home-assistant/tools/ha-probe.py`. Results in SPEC §10. |
 | 1.3 `ts_ha` library | Done. Pure functions pass the vectors; the MQTT side passes `mqtt_test.py` against doubles of the documented `ts_mqtt`/`ts_wifi` (2026-11-27). |
-| 1.4 `ha device` | Done, but reads the runtime version from a runtime internal (below). |
+| 1.4 `ha device` | Done. No runtime version in discovery until #25 (below). |
 | 1.5 Entity nodes | All six done. `emit` includes the required `topic` key. `ha number` and `ha select` inputs are `any` (2026-11-27, Mike), so a function node's value can be wired back. |
-| 1.6 Shared hook generator | Not started. |
+| 1.6 Shared hook generator | Done (2026-11-27). Shared code in `hooks/`, `tools/build-hooks.py` writes the seven `.compile.py`; the compile test fails if they're stale. `ha device`'s hook builds the real discovery message (with `ts_ha.build_discovery`'s own source) and errors over 4 KB. |
 | 1.7 Tests | Done: compile tests, SPEC vectors, MQTT side (`home-assistant/test/`). |
-| 1.8 Example flow | Done; compiles clean (2 warnings: the unwired `ha switch` and `ha number`). |
+| 1.8 Example flows | Done: `kitchen-sink-ha` (C3) and `freenove-s3-ha` (2026-11-27, every entity type, no extra parts). Both compile with their 2 echo warnings. |
 | 1.9 Hardware pass | Partly, on the kitchen-sink C3, all good so far. Not yet: HA restart, broker restart, rename board, C3 heap logging, `ha-cleanup.py` check, then the Freenove S3. |
-| 1.10 Docs | Bundle README only. |
+| 1.10 Docs | Done (2026-11-27): bundle README (install, MQTT setup in HA, use, removing a device, limits) and a page per node in `home-assistant/home-assistant/docs/`, in the user guide's node-page layout. The ThingStudio pointer is request `ha-bundle-pointer`, not filed until 1.9 passes and the set has a public URL. |
 
 ## Findings on 2026-11-26 (afternoon)
 
@@ -68,8 +76,16 @@ From the repository root. On 2026-11-27 at a57d686b: compile 22 cases, 0 failed,
   version, so discovery has no `dev.sw` until #25 gives a documented way. a57d686b also makes core count any
   broker-holding node as MQTT, so a built-in network node in the same flow now passes the same `defer_to_mqtt` as
   `ha device` (before, it could pass `False` and `ensure_station` would raise).
-- **Known gap, SPEC §8:** no hook errors on a discovery message over 4 KB. It needs every component built in one
-  place, i.e. 1.6. Compile test `too-big` records it.
+- **SPEC §8, closed 2026-11-27:** `ha device`'s hook sizes the discovery message and errors over 4096 bytes, naming
+  the size and the entity count. It counts worst cases for what only the board knows (16 hex digits of chip id, a
+  32-character hostname for an unnamed device) and leaves out the stubs for entities a previous flow announced. About
+  13 long-named sensors fit. The guide doesn't say which modules a hook may import, so the hooks import nothing:
+  `json_size` counts bytes itself, and `vectors_test.py` checks it against MicroPython's `json.dumps` exactly.
+- **A computed value can't reach a `number` input** (2026-11-27). A function node's outputs are `any`, and `any` wires
+  only into `any`, `bool` and `bytes`, so the pwm out page's "convert it first, in a function node" can't be
+  followed. Found writing the Freenove example: its slider drives the backlight PWM directly as a 0-1 fraction
+  instead of a percentage. Request `function-into-typed-inputs` (core), **not filed**: the session wasn't allowed to
+  create the issue.
 - **Wiring, fixed 2026-11-27:** `ha number` and `ha select` had inputs typed `number` and `string`, which a function
   node's `any` output can't wire into, so the unwired-input warning's advice couldn't be followed. Both are `any` now;
   `ts_ha` still errors on a value the entity can't show. Compile test `function-feedback` passes.
@@ -88,6 +104,8 @@ Filed 2026-11-27 with a token Mike put in `env.sh` (`THINGSTUDIO_GITHUB_TOKEN`).
 | `2026-11-26-ts-mqtt-client-for-nodes` | docs | #24, closed by a57d686b (related: #21, from the wake-on-lan set) |
 | `2026-11-26-runtime-version-for-nodes` | core | #25 |
 | `2026-11-26-describe-custom-nodes` | core | #26 |
+| `2026-11-27-function-into-typed-inputs` | core | Not filed: Mike to file. |
+| `2026-11-27-ha-bundle-pointer` | docs | Not filed: after 1.9, once the set has a public URL. |
 
 Lesson: check `main`'s user guide before filing: a gap at the pin may already be fixed. The pin moved to `main`
 (67e9fc26, then a57d686b for #24) on 2026-11-27. `main` raised the device runtime to 15.2.0 (HELLO carries `chipId`, protocol SPEC 5): the
@@ -102,6 +120,7 @@ boards may need the matching runtime before the hardware pass.
 - Third-party code: pinned, scriptless, gated (AGENTS.md), aligned with ThingStudio's rules on 2026-11-27.
 - Pin ThingStudio to `main` (2026-11-27).
 - `ha number` and `ha select` inputs are `any` (2026-11-27).
+- Finish everything but the hardware, then test end to end (2026-11-27).
 - 1.9 waits for #24 rather than going on under an exception (2026-11-27).
 - #24 is about documenting core's own APIs (`ts_mqtt`, `ts_wifi`): what the built-in mqtt nodes use, and so any
   other node can (Mike, 2026-11-27). Not a separate API for custom nodes. Documented in ThingStudio, not here.
@@ -114,7 +133,10 @@ boards may need the matching runtime before the hardware pass.
 
 ## Next
 
-1. 1.9 on the C3 (Mike at the board), then the Freenove S3. First check the boards' runtime against the pinned
-   build's (15.2.0 on `main` at a57d686b). #24 is done (see Findings).
-2. #21 (wake-on-lan's `ts_wifi` question) looks answered by the same docs: Mike to close it or leave it to that set.
-3. 1.6 (which also closes the §8 gap), then 1.10.
+1. **1.9 end to end** (Mike at the board): the C3 with `kitchen-sink-ha`, then the Freenove with `freenove-s3-ha`.
+   First put both boards on the pinned build's runtime (15.2.0). The checklist is in the plan, task 1.9; still to do
+   from the first pass: HA restart, broker restart, rename the board, the C3 heap figures (printed with each
+   discovery), `ha-cleanup.py`, and the S3. New since the first pass, worth watching: `dev.sw` is gone from the device
+   page, and the 4 KB check.
+2. File `function-into-typed-inputs`. After 1.9: decide the set's public URL and file `ha-bundle-pointer`.
+3. Then Phase 2 (first-install path), or Phase S.

@@ -2,7 +2,7 @@
 # home-assistant/test/vectors_test.py -- plan task 1.7: ts_ha against the SPEC's vectors (SPEC §9).
 #
 # Runs under the MicroPython unix port (and CPython). Tests ts_ha's pure functions only: build_discovery,
-# state_payload, command_value. The MQTT side is mqtt_test.py.
+# state_payload, command_value, and that ha device's hook sizes discovery exactly. The MQTT side is mqtt_test.py.
 #
 #   MICROPYPATH=home-assistant/test/doubles:home-assistant/home-assistant/lib:<micropython>/extmod \
 #       micropython home-assistant/test/vectors_test.py home-assistant/docs/working-notes/vectors
@@ -68,6 +68,24 @@ def run(folder):
             if (again is ts_ha.IGNORED) != (got is ts_ha.IGNORED) or (got is not ts_ha.IGNORED and again != got):
                 failures.append('command %s %r as bytes: got %s, as text %s' % (case['p'], case['payload'],
                                                                                  show(again), show(got)))
+
+    # ha device's compile hook sizes the discovery message (SPEC §8) without json; its count must be the board's
+    # json.dumps byte count exactly. The hook file has no imports, so it runs here as it is.
+    hook = {}
+    with open(folder + '/../../../home-assistant/ha_device.compile.py') as f:
+        exec(f.read(), hook)
+    sized = [case['payload'] for case in load(folder, 'discovery.json')['cases']]
+    sized.append({'name': 'Température « salon » \u2014 \U0001F321', 'esc': 'a"b\\c\n\t\x01', 'n': [0, -3, 2.5, 1e-07],
+                  'flags': [True, False, None], 'nested': {'empty': {}, 'list': []}})
+    for i, payload in enumerate(sized):
+        total += 1
+        if sys.implementation.name == 'micropython':
+            want = len(ts_ha._dumps(payload).encode())
+        else:  # CPython escapes non-ASCII by default; the board's MicroPython json doesn't
+            want = len(json.dumps(payload, separators=(',', ':'), ensure_ascii=False).encode())
+        got = hook['json_size'](payload)
+        if got != want:
+            failures.append('json_size case %d: hook counts %d bytes, the board\'s json.dumps writes %d' % (i, got, want))
 
     for line in failures:
         print('FAIL  ' + line)

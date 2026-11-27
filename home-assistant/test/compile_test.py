@@ -85,6 +85,10 @@ CASES = [
     ('the kitchen-sink example', EXAMPLE,
      {'ok': True, 'warnings': ["node haled): ha switch 'LED': input not wired",
                                "node habright): ha number 'LED brightness': input not wired"], 'warning_count': 2}),
+    ('the Freenove S3 example', os.path.join(BUNDLE, 'examples', 'freenove-s3-ha.flow.json'),
+     {'ok': True, 'board': 'board:freenove-s3-4in',
+      'warnings': ["ha number 'Screen brightness': input not wired", "ha select 'Mode': input not wired"],
+      'warning_count': 2}),
     ('every entity type, inputs wired',
      flow('all-wired', [device(), tick(), fn('f'), button_input()] + entity_types(),
           [('tick', 0, 'f', 0), ('f', 0, 's1', 0), ('f', 0, 'b1', 0), ('f', 0, 'w1', 0), ('tick', 0, 'n1', 0),
@@ -142,13 +146,24 @@ CASES = [
 ] + [
     ('a discovery message over 4 KB (SPEC §8)',
      flow('too-big', [device()] + many_entities(40)),
-     {'ok': False, 'errors': ['4 KB'],
-      'gap': 'SPEC §8 says the compile errors above 4 KB; no hook checks it yet (needs the shared generator, 1.6)'}),
+     {'ok': False, 'errors': ['over the 4 KB (4096 bytes) the board can build and send']}),
+    ('13 long-named sensors, about 3.9 KB, compile',
+     flow('nearly-too-big', [device(), tick(), fn('f')] + many_entities(13),
+          [('tick', 0, 'f', 0)] + [('f', 0, 's%02d' % i, 0) for i in range(13)]),
+     {'ok': True, 'warning_count': 0}),
+    ('14 long-named sensors, about 4.1 KB, are refused',
+     flow('just-too-big', [device(), tick(), fn('f')] + many_entities(14),
+          [('tick', 0, 'f', 0)] + [('f', 0, 's%02d' % i, 0) for i in range(14)]),
+     {'ok': False, 'errors': ['bytes for 14 entities, over the 4 KB'], 'error_count': 1}),
+    ('an entity with an error is left out of the size check, and reports its own error',
+     flow('size-skips-invalid', [device(), tick(), fn('f')] + many_entities(13) + [sensor('bad', name='')],
+          [('tick', 0, 'f', 0)] + [('f', 0, 's%02d' % i, 0) for i in range(13)] + [('f', 0, 'bad', 0)]),
+     {'ok': False, 'errors': ['ha sensor needs a name'], 'error_count': 1}),
 ]
 
 
-def compile_flow(cli, custom_nodes, path):
-    cmd = ['node', cli, '--json', '--custom-nodes', custom_nodes, '--board', BOARD, path]
+def compile_flow(cli, custom_nodes, path, board=BOARD):
+    cmd = ['node', cli, '--json', '--custom-nodes', custom_nodes, '--board', board, path]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
     try:
         results = json.loads(proc.stdout)
@@ -174,6 +189,8 @@ def check(result, expect):
         for want in expect.get(key, ()):
             if not any(want in line for line in result[key]):
                 problems.append('no %s line contains %r' % (key[:-1], want))
+    if 'error_count' in expect and len(result['errors']) != expect['error_count']:
+        problems.append('%d errors, expected %d' % (len(result['errors']), expect['error_count']))
     if 'warning_count' in expect and len(result['warnings']) != expect['warning_count']:
         problems.append('%d warnings, expected %d' % (len(result['warnings']), expect['warning_count']))
     if problems:
@@ -188,11 +205,16 @@ def main():
         print('compile_test: set THINGSTUDIO_COMPILE to thingstudio-compile.mjs from an installed ThingStudio '
               '(got %r) -- see the user guide, "Check a flow without the editor"' % cli)
         return 2
+    build = subprocess.run([sys.executable, os.path.join(os.path.dirname(HERE), 'tools', 'build-hooks.py'), '--check'],
+                           capture_output=True, text=True)
+    print(('ok   ' if build.returncode == 0 else 'FAIL ') + 'generated hooks are up to date (plan 1.6): '
+          + build.stdout.strip())
     scratch = tempfile.mkdtemp(prefix='ha-compile-test-')
     try:
         custom_nodes = os.path.join(scratch, 'custom-nodes')
         shutil.copytree(BUNDLE, os.path.join(custom_nodes, 'home-assistant'))
-        failed = gaps = 0
+        failed = 0 if build.returncode == 0 else 1
+        gaps = 0
         for name, spec, expect in CASES:
             if isinstance(spec, dict):
                 path = os.path.join(scratch, spec['flowName'] + '.flow.json')
@@ -200,7 +222,7 @@ def main():
                     json.dump(spec, f, indent=1)
             else:
                 path = spec
-            problems = check(compile_flow(cli, custom_nodes, path), expect)
+            problems = check(compile_flow(cli, custom_nodes, path, expect.get('board', BOARD)), expect)
             if expect.get('gap'):
                 if problems:
                     gaps += 1
@@ -215,7 +237,7 @@ def main():
                     print('      ' + p)
             else:
                 print('ok    %s' % name)
-        print('%d cases, %d failed, %d known gaps' % (len(CASES), failed, gaps))
+        print('%d cases, %d failed, %d known gaps' % (len(CASES) + 1, failed, gaps))
         return 1 if failed else 0
     finally:
         shutil.rmtree(scratch, ignore_errors=True)

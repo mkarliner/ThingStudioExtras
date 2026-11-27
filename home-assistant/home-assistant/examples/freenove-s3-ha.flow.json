@@ -1,0 +1,368 @@
+{
+  "formatVersion": 1,
+  "flowName": "freenove-s3-ha",
+  "nodes": [
+    {
+      "id": "hadev",
+      "type": "ha/device",
+      "properties": {
+        "deviceName": "",
+        "area": "",
+        "prefix": "homeassistant",
+        "brokerConfigId": "ef01cb90-dda3-4708-86a0-c7d52db02539",
+        "wifiConfigId": "1b1ff863-cb83-4567-af04-4d720eee028b"
+      }
+    },
+    {
+      "id": "hadbg",
+      "type": "thingstudio/debug",
+      "properties": {
+        "fullMessage": false
+      }
+    },
+    {
+      "id": "habright",
+      "type": "ha/number",
+      "properties": {
+        "name": "Screen brightness",
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "unit": "",
+        "mode": "slider"
+      }
+    },
+    {
+      "id": "backlight",
+      "type": "thingstudio/pwm_out",
+      "properties": {
+        "pin": 45,
+        "freq": 1000
+      }
+    },
+    {
+      "id": "hanight",
+      "type": "ha/switch",
+      "properties": {
+        "name": "Night mode",
+        "deviceClass": "switch"
+      }
+    },
+    {
+      "id": "nightfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "flow.set('night', bool(msg['payload']))\nmsg['payload'] = flow.get('night')\nreturn msg",
+        "outputCount": 1,
+        "label": "remember night mode"
+      }
+    },
+    {
+      "id": "nightdbg",
+      "type": "thingstudio/debug",
+      "properties": {
+        "fullMessage": false
+      }
+    },
+    {
+      "id": "tick",
+      "type": "thingstudio/timer",
+      "properties": {
+        "intervalMs": 10000
+      }
+    },
+    {
+      "id": "tempfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "import esp32\nmsg['payload'] = round(esp32.mcu_temperature(), 1)\nreturn msg",
+        "outputCount": 1,
+        "label": "chip temperature"
+      }
+    },
+    {
+      "id": "hatemp",
+      "type": "ha/sensor",
+      "properties": {
+        "name": "CPU temperature",
+        "deviceClass": "temperature",
+        "unit": "°C",
+        "stateClass": "measurement",
+        "icon": ""
+      }
+    },
+    {
+      "id": "hotfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "msg['payload'] = msg['payload'] > 60\nreturn msg",
+        "outputCount": 1,
+        "label": "over 60 °C?"
+      }
+    },
+    {
+      "id": "hahot",
+      "type": "ha/binary_sensor",
+      "properties": {
+        "name": "Running hot",
+        "deviceClass": "problem"
+      }
+    },
+    {
+      "id": "memfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "import gc\ngc.collect()\nmsg['payload'] = gc.mem_free() // 1024\nreturn msg",
+        "outputCount": 1,
+        "label": "free memory"
+      }
+    },
+    {
+      "id": "hamem",
+      "type": "ha/sensor",
+      "properties": {
+        "name": "Free memory",
+        "deviceClass": "none",
+        "unit": "KB",
+        "stateClass": "measurement",
+        "icon": "mdi:memory"
+      }
+    },
+    {
+      "id": "hamode",
+      "type": "ha/select",
+      "properties": {
+        "name": "Mode",
+        "options": "normal\nnight\naway"
+      }
+    },
+    {
+      "id": "modedbg",
+      "type": "thingstudio/debug",
+      "properties": {
+        "fullMessage": false
+      }
+    },
+    {
+      "id": "hahello",
+      "type": "ha/button",
+      "properties": {
+        "name": "Hello"
+      }
+    },
+    {
+      "id": "hellodbg",
+      "type": "thingstudio/debug",
+      "properties": {
+        "fullMessage": false
+      }
+    }
+  ],
+  "edges": [
+    [
+      "hadev",
+      0,
+      "hadbg",
+      0
+    ],
+    [
+      "habright",
+      0,
+      "backlight",
+      0
+    ],
+    [
+      "hanight",
+      0,
+      "nightfn",
+      0
+    ],
+    [
+      "nightfn",
+      0,
+      "hanight",
+      0
+    ],
+    [
+      "nightfn",
+      0,
+      "nightdbg",
+      0
+    ],
+    [
+      "tick",
+      0,
+      "tempfn",
+      0
+    ],
+    [
+      "tempfn",
+      0,
+      "hatemp",
+      0
+    ],
+    [
+      "tempfn",
+      0,
+      "hotfn",
+      0
+    ],
+    [
+      "hotfn",
+      0,
+      "hahot",
+      0
+    ],
+    [
+      "tick",
+      0,
+      "memfn",
+      0
+    ],
+    [
+      "memfn",
+      0,
+      "hamem",
+      0
+    ],
+    [
+      "hamode",
+      0,
+      "modedbg",
+      0
+    ],
+    [
+      "hahello",
+      0,
+      "hellodbg",
+      0
+    ]
+  ],
+  "layout": {
+    "hadev": {
+      "pos": [
+        80,
+        80
+      ]
+    },
+    "hadbg": {
+      "pos": [
+        300,
+        80
+      ]
+    },
+    "habright": {
+      "pos": [
+        80,
+        180
+      ]
+    },
+    "backlight": {
+      "pos": [
+        300,
+        180
+      ]
+    },
+    "hanight": {
+      "pos": [
+        520,
+        280
+      ]
+    },
+    "nightfn": {
+      "pos": [
+        300,
+        280
+      ]
+    },
+    "nightdbg": {
+      "pos": [
+        520,
+        350
+      ]
+    },
+    "tick": {
+      "pos": [
+        80,
+        450
+      ]
+    },
+    "tempfn": {
+      "pos": [
+        300,
+        450
+      ]
+    },
+    "hatemp": {
+      "pos": [
+        520,
+        450
+      ]
+    },
+    "hotfn": {
+      "pos": [
+        520,
+        520
+      ]
+    },
+    "hahot": {
+      "pos": [
+        740,
+        520
+      ]
+    },
+    "memfn": {
+      "pos": [
+        300,
+        520
+      ]
+    },
+    "hamem": {
+      "pos": [
+        520,
+        590
+      ]
+    },
+    "hamode": {
+      "pos": [
+        80,
+        690
+      ]
+    },
+    "modedbg": {
+      "pos": [
+        300,
+        690
+      ]
+    },
+    "hahello": {
+      "pos": [
+        80,
+        790
+      ]
+    },
+    "hellodbg": {
+      "pos": [
+        300,
+        790
+      ]
+    }
+  },
+  "configs": [
+    {
+      "id": "1b1ff863-cb83-4567-af04-4d720eee028b",
+      "type": "thingstudio/config/wifi",
+      "properties": {
+        "credentialName": "mihome",
+        "security": "password"
+      }
+    },
+    {
+      "id": "ef01cb90-dda3-4708-86a0-c7d52db02539",
+      "type": "thingstudio/config/mqtt-broker",
+      "properties": {
+        "credentialName": "lan-mqtt-broker"
+      }
+    }
+  ]
+}
