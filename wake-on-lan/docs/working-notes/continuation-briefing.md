@@ -1,25 +1,23 @@
-# Wake on LAN node — continuation briefing (2026-11-27)
+# Wake on LAN node — continuation briefing (updated 2026-11-27, after the docs landed)
 
 **For the next session.** Read the repo's `AGENTS.md` first (Extras works as a ThingStudio user; supply-chain
-caution), then this. The design below was settled on 2026-11-27 and is the record of it; it lives here because
-the node itself is **on hold** until `mkarliner/ThingStudio#21` is answered (request
-`2026-11-27-wifi-for-network-nodes`).
+caution), then this. The node is written and compile-checked; what is left is the board pass (kitchen-sink C3),
+which needs the board plugged in.
 
 Origin: one line in `docs/mikes-notes.md` — "Wake on lan node - takes an mac address (or an IP?) and sends a
 magic packet." Mike settled the contract on 2026-11-27: the MAC arrives per message, as a payload dict entry
 (the payload dict may hold other stuff, which the node ignores). The "or an IP?" resolves to an optional
-destination entry (below).
+destination entry (§1 of the SPEC).
 
 ## Where things stand
 
 | Task | Status |
 |---|---|
 | Design: descriptor, payload contract, behaviour, errors, test plan | Settled 2026-11-27 — below. |
-| Node files (`wol.node.json`, `wol.node.py`) | Not started. Blocked on the WiFi part (issue #21). |
-| `SPEC.md` + `vectors/` | Not started; the payload contract below is its draft. |
-| Board pass (kitchen-sink C3) | Not started; includes the broadcast finding. |
-| Bundle `README.md` | Not started. |
-| Core request | Filed: `wifi-for-network-nodes` → mkarliner/ThingStudio#21. |
+| Node files | Done: `wake-on-lan/wake-on-lan/` (`wol.node.json`, `wol.node.py`, `wol.compile.py`, `lib/wol_packet.py`, `README.md`, `examples/wol-wake.flow.json`). |
+| `SPEC.md` + `vectors/` | Done; vectors pass under CPython (28 checks). The MicroPython pass runs once `test/setup.sh`'s build exists (below). |
+| Compile checks | Done: `thingstudio-compile` on the example flow is clean; `wake-on-lan/test/compile_test.py` — 3 cases (ok, no-WiFi, no-capability), all pass. |
+| Board pass (kitchen-sink C3) | Not started: the C3 was not connected on 2026-11-27 (no serial device). Includes the broadcast finding. |
 
 ## Design (settled 2026-11-27)
 
@@ -30,153 +28,132 @@ wake-on-lan/
   wake-on-lan/            the bundle: what the user copies into ~/.thingstudio/custom-nodes/
     wol.node.json
     wol.node.py
+    wol.compile.py
+    lib/wol_packet.py     the pure functions, testable under MicroPython and CPython alike
+    examples/wol-wake.flow.json
     README.md
-  docs/working-notes/     this briefing; SPEC.md + vectors/ when the set starts
-  test/  tools/           development-only, never copied
+  docs/working-notes/     this briefing, SPEC.md, vectors/
+  test/                   setup.sh, compile_test.py, vectors_test.py; THINGSTUDIO_VERSION in the set root
 ```
 
 **Kind: `sink`** — one input, **no output**. The user guide is explicit that UDP has no acknowledgement ("a
 send that succeeds doesn't mean the datagram arrived", udp send page); an output "sent" confirmation would be
 misleading, so there is none.
 
-Descriptor (`wol.node.json`), settled:
+The descriptor is in `wake-on-lan/wake-on-lan/wol.node.json`; the payload contract, the packet, the
+destination/port rules, the properties and every error message are in `SPEC.md` (v1). The one decision to
+remember: `mac` is required in the payload dict, `ip` is optional (absent → the broadcast
+`255.255.255.255`), and every other key rides along ignored. The magic packet is six `0xFF` bytes + the MAC
+sixteen times — 102 bytes.
 
-```json
-{
-  "type": "wol/wol",
-  "kind": "sink",
-  "label": "wol",
-  "group": "network",
-  "color": "#4caf50",
-  "bgcolor": "#1b3a1e",
-  "icon": "⚡",
-  "description": "Sends a Wake-on-LAN magic packet. Payload is a dict with the target's MAC address.",
-  "requires": { "capabilities": ["wifi"] },
-  "ports": { "inputs": [{ "name": "msg", "type": "any" }] },
-  "properties": [
-    { "name": "port", "label": "port", "kind": "number", "default": 9, "min": 1, "max": 65535,
-      "help": "Destination UDP port. 9 is the Wake-on-LAN default; some machines listen on 7." },
-    { "name": "repeats", "label": "repeats", "kind": "number", "default": 1, "min": 1, "max": 10,
-      "help": "How many times to send the packet. Broadcasts can be dropped; 3 is a common choice." }
-  ]
-}
-```
+### The WiFi part (settled once the docs landed)
 
-`requires` is a documented field: on a board without the `wifi` capability the palette grays the node out and
-the compile refuses it, naming the missing capability. (`group: "network"` is to be checked against the
-built-in section name on the board — the guide says any name works and a new one gets its own section.)
+The node joins the flow's one WiFi network exactly as the user guide now documents it (custom-nodes,
+"The flow's WiFi: ts_wifi" — added by commit `a57d686b85dc74ae7e3f7240536ad3c40d406fe9`, main, 2026-11-27,
+which is this set's pin):
 
-Payload contract (the SPEC draft):
+- the descriptor carries a `wifi` field (`configRef`, `thingstudio/config/wifi`, `singleton: true`);
+- `wol.compile.py` is the guide's example hook: it resolves the config from `ctx["referencedConfigs"]` and
+  returns `ssid`, `password`, `security` and `deferToMqtt` (worked out as the guide's example does — `True`
+  when any node holds the flow's MQTT broker config);
+- setup calls `ts_wifi.ensure_station(ssid, password, security, deferToMqtt)`;
+- `run` checks `isconnected()` before sending (named error), and a refused send is caught and reported as
+  `wol: send to <ip>:<port> failed: …`, as `udp send` reports its failures.
 
-| entry | required | meaning |
-|---|---|---|
-| `mac` | yes | the target's MAC, a string. Forms: `AA:BB:CC:DD:EE:FF`, also dash-, dot- or separator-less (Windows shows dashes, Cisco dots). Case-insensitive. |
-| `ip` | no | destination IPv4, a string. Absent → broadcast `255.255.255.255`. Present → unicast to that address (the routed/VLAN case). |
-
-Any other keys in the payload dict ride along and are ignored (node conventions). The magic packet is
-`b'\xff' * 6 + mac * 16` — 102 bytes — sent as one UDP datagram to `(destination, port)`, `repeats` times.
-
-Errors: runtime, reported from the board and attributed to the node, in the house style (`ValueError`,
-`"wol: …"` prefix, the offending value named via `%r`, the remedy stated), e.g. `wol: payload must be a dict
-with a 'mac' entry, got 42` / `wol: 'zz:bb:…' is not a MAC address -- 6 byte pairs, hex, e.g. AA:BB:CC:DD:EE:FF`
-/ `wol: '300.1.1.1' is not an IPv4 address, e.g. 192.168.1.50`. A failed send names the destination, port and
-the system's error.
-
-Board behaviour (`wol.node.py`), settled sketch — **everything from the socket up is the blocked part**
-(see below):
-
-```python
-import socket
-
-_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)          # documented pattern (custom-nodes, "Cleanup")
-_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)       # the broadcast finding: settle on hardware
-runtime.register_cleanup('wol_socket', lambda: _sock.close())     # documented; avoids EADDRINUSE on redeploy
-
-def _mac(text): ...      # the forms above -> 6 raw bytes; ValueError otherwise
-def _dest(text): ...     # IPv4 validation -> string; '' -> '255.255.255.255'
-
-async def run(msg, properties):
-    payload = msg.get('payload')
-    if not isinstance(payload, dict) or 'mac' not in payload:
-        raise ValueError("wol: payload must be a dict with a 'mac' entry, got %r" % (payload,))
-    packet = b'\xff' * 6 + _mac(payload['mac']) * 16              # 102 bytes
-    for _ in range(properties['repeats']):
-        _sock.sendto(packet, (_dest(payload.get('ip') or ''), properties['port']))
-```
-
-**The WiFi part — the blocker.** The node needs the flow's WiFi up, and the user guide documents that pattern
-only for built-in nodes and for custom MQTT nodes. For a non-MQTT custom network node it says nothing about:
-the WiFi config's type for a `configRef`, what the node's Python receives for it, what `ts_wifi` offers, who
-brings the connection up when this node is the flow's only network node, unmanaged semantics, or the failure
-path when the network is down. Per AGENTS.md (core requests, point 4): until issue #21 is answered, no node
-files and no workaround leaning on undocumented behaviour — and no guessing from core or from another bundle's
-implementation (Mike, 2026-11-27: hearsay from a parallel development is not acceptable; dogfood rules). On
-resume, implement exactly what the docs answer says; if it differs from anything above, the docs win.
+The node's own failure style is pinned in SPEC §6: `ValueError`/`OSError` raised in `run`, `"wol: …"`
+prefix, the offending value named, the remedy stated.
 
 ## Open questions to settle on hardware (kitchen-sink C3)
 
 - **Broadcast.** The guide is silent on sending to `255.255.255.255` / `SO_BROADCAST`. The design defaults to
-  the universal broadcast with the `setsockopt` above; if the board's stack refuses it, the fallback is a
-  directed broadcast computed from `ifconfig` (ip, netmask). Decide on hardware, not from memory.
+  the universal broadcast with `_sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)`; if the board's stack refuses
+  it, the fallback is a directed broadcast computed from `ifconfig` (ip, netmask). Decide on hardware, not
+  from memory.
 - **Test plan.**
-  1. Loopback, no target machine: a flow with a `udp receive` on the node's port plus the `wol` node sending to
-     the board's own IP via the `ip` entry → compare the 102 datagram bytes (6×FF + MAC×16) in the journal.
-  2. Broadcast: a host-side listener (a dev tool, e.g. `tools/wol-listen.py`) on the node's port; doubles as the
-     `SO_BROADCAST` check.
-  3. Error vectors: non-dict payload, missing `mac`, each bad MAC form, bad `ip` → a console line naming the node.
-  4. `test/setup.sh`-style pin on full commit hashes (as the HA set does); `thingstudio-compile` for
-     descriptor/compile checks without a board.
-- **Pin.** This set gets its own `THINGSTUDIO_VERSION` (branch + full commit hash) when its build is installed.
-  The HA set's pin (`user-libraries` at 8f8d137b, 2026-11-25) records what was current then; it is a reference,
-  not this set's pin.
+  1. Loopback, no target machine: a flow with a `udp receive` on the node's port plus the `wol` node sending
+     to the board's own IP via the `ip` entry → compare the 102 datagram bytes (6×FF + MAC×16) in the journal.
+  2. Broadcast: a host-side listener (a dev tool, e.g. `tools/wol-listen.py`) on the node's port; doubles as
+     the `SO_BROADCAST` check.
+  3. Error vectors: non-dict payload, missing `mac`, each bad MAC form, bad `ip` → a console line naming the
+     node; and the WiFi-down error by taking the network off.
+  4. Redeploy: the `register_cleanup` socket close must survive a second deploy (no `EADDRINUSE`).
+
+## Set up the session (the build doesn't survive between sessions)
+
+```
+bash wake-on-lan/test/setup.sh $HOME/work
+```
+
+It builds ThingStudio (`wake-on-lan/THINGSTUDIO_VERSION`: `main` at a57d686b) and MicroPython
+(`wake-on-lan/test/MICROPYTHON_VERSION`: v1.29.0 at 0fd6c573) by full commit into the work folder, never in
+the shared folder (it refuses a folder inside the repository), and fails on a checkout that is anywhere else.
+It needs git, Python 3.11+, Node.js 22 and `make` (the device shell has 3.13.5, Node 22.23.4 and make; no
+uv-managed CPython was needed, unlike the HA set). MicroPython's standard variant needs its submodules at
+the commits the pin records (`git submodule update --init --recursive`; on 2026-11-27 the plain `make`
+failed without them: `mbedtls/platform.h: No such file or directory`). On 2026-11-27 the ThingStudio build
+took a few minutes warm (npm from its lockfile, `pip --require-hashes`, the editor's `npm run build:cli` for
+`dist-cli/thingstudio-compile.mjs`).
+
+## Tests
+
+From the repository root:
+
+```
+python3 wake-on-lan/test/vectors_test.py
+MICROPYPATH=wake-on-lan/wake-on-lan/lib $HOME/work/micropython/ports/unix/build-standard/micropython wake-on-lan/test/vectors_test.py
+THINGSTUDIO_COMPILE=$HOME/work/ThingStudio/editor/dist-cli/thingstudio-compile.mjs python3 wake-on-lan/test/compile_test.py
+```
+
+On 2026-11-27: vectors 28 checks, 0 failed (CPython; the MicroPython pass was building), compile 3 cases,
+all pass. Run them after any change to the bundle or the vectors.
 
 ## Findings on 2026-11-27
 
-- **The general network-node pattern is undocumented for non-MQTT custom nodes.** What the guide documents:
-  built-in nodes each carry the **WiFi** field ("the flow's WiFi network, shared by every WiFi node in the
-  flow" — udp send, http request, mqtt subscribe); Editor in depth, "Config nodes": "A flow has one WiFi
-  network … change it on one node and it changes on all"; custom-nodes, "Sharing a config": network configs
-  "expose only the credential's name, not the secret, so a custom node can't make a WiFi connection from
-  one"; custom-nodes, "Libraries you can import": `ts_wifi` listed as "the flow's WiFi … shared with the
-  network nodes" with no API; the only who-manages-the-connection story is the MQTT one ("the flow's WiFi is
-  left to the MQTT client"). Checked across custom-nodes, node-conventions, editor-in-depth, udp send,
-  http request, mqtt subscribe and the FAQ. → Request `2026-11-27-wifi-for-network-nodes`, filed as
-  mkarliner/ThingStudio#21.
-- `ts_wifi` is already asked from the MQTT side in request `2026-11-26-ts-mqtt-client-for-nodes` ("what
-  `ts_wifi` offers a node", still not filed); the two can be answered together.
-- The repo's local `main` had diverged from `origin/main` (a local "first commit" carrying only a duplicated
-  README line). Reconciled with `git pull --rebase`; the README conflict resolved to the one-line version.
-  Commands that didn't work as given: bare `git pull` (no tracking information for the branch), then
-  `git pull` again (divergent branches, no reconciliation strategy set).
-- This session checked the **published** guide (docs.thingstudio.net, "follow the latest code") on 2026-11-27;
-  no ThingStudio build is installed in this session's workspace, so nothing was checked against the copy a
-  pinned build ships.
+- **The general network-node pattern was undocumented until this afternoon.** Request
+  `2026-11-27-wifi-for-network-nodes` was filed as mkarliner/ThingStudio#21 (morning) and answered in the
+  user guide the same day (commit a57d686b): "The flow's WiFi: ts_wifi" and "The flow's MQTT client: ts_mqtt"
+  under custom-nodes. This set is pinned to that commit; the issue is still open — Mike may close it.
+- **Flow files namespace their built-in types:** `thingstudio/timer`, `thingstudio/function`, … The
+  `--describe` output shows the short name (`Type: timer`), which is not the string a flow file holds;
+  writing the short name fails the check with "no custom node package defines type". The strings the flow
+  file wants are the ones the node catalog and an existing flow use.
+- **`thingstudio-compile` uses stand-in credentials** and says so in a note ("WiFi credentials were not
+  resolved (they live in the backend): stand-in values were used"); it checks a custom node's descriptor and
+  compile hook for real, but only the syntax of `.node.py`.
+- **The MicroPython unix standard variant needs its submodules** (mbedtls, berkeley-db, …): `make -C
+  ports/unix` fails on a fresh clone until `git submodule update --init --recursive`.
+- **The session's first git pull needed a rebase** (local `main` had diverged from `origin/main` with a
+  duplicated README line): `git branch --set-upstream-to=origin/main main`, then `git pull --rebase`,
+  README conflict resolved to the one-line version.
 
 ## Core requests (in `docs/core-requests/`)
 
 | Request | Type | Status |
 |---|---|---|
-| `2026-11-27-wifi-for-network-nodes` | docs (or core) | Filed: mkarliner/ThingStudio#21 (2026-11-27). |
+| `2026-11-27-wifi-for-network-nodes` | docs (or core) | Filed: mkarliner/ThingStudio#21; answered in the user guide 2026-11-27 (commit a57d686b). |
 
 ## How to resume
 
-1. Check the state of mkarliner/ThingStudio#21. Unanswered: the set waits; nothing to build.
-2. Answered: install the pinned ThingStudio build in the session's own workspace (never the shared folder),
-   read the user guide that build ships (it matches the installed version), and take the answer as the design
-   meets the docs — the docs win where they differ from this briefing.
-3. Write `wake-on-lan/wake-on-lan/wol.node.json` and `wol.node.py` per the design above, plus the bundle
-   `README.md` (install: copy the folder in; minimum build named there).
-4. `SPEC.md` + `vectors/` from the payload contract; run the vectors in the same change.
-5. The board pass on the kitchen-sink C3 per the test plan; settle the broadcast question there.
-6. `THIRD-PARTY.md`: a line per change only when third-party code enters — expected none; the board code is
-   MicroPython standard library plus what the guide documents.
+1. Plug in the kitchen-sink C3 (it was not connected on 2026-11-27), set up the session (above), install the
+   runtime from the pinned build's editor.
+2. The board pass per the test plan: loopback byte check, broadcast + `SO_BROADCAST` finding, error vectors
+   on the console, the redeploy socket check. Settle the broadcast question there.
+3. If the board pass moves the design, move the SPEC with it (Mike's permission for the spec) and run the
+   vectors in the same change.
+4. Close out: mention the board pass in the bundle `README.md` if it earns a note, and add `tools/` only if
+   the host-side listener stays (a dev tool, never copied, and a `THIRD-PARTY.md` line if it imports
+   anything).
+5. `mkarliner/ThingStudio#21` is still open; it can be closed once Mike confirms the guide covers it.
 
 ## Toolchain this session used (named per AGENTS.md, briefings)
 
-- No installs and nothing fetched: no ThingStudio or MicroPython build in the session's workspace, no Python
-  or npm packages, no toolchain downloaded.
-- Read: the published user guide at docs.thingstudio.net (latest code) on 2026-11-27 — pages: home,
-  custom-nodes, node-conventions, udp send, mqtt subscribe, http request, editor-in-depth, FAQ.
-- `git` — pull/rebase/commit; the not-working-as-given commands are under Findings.
-- `gh` (GitHub CLI at `~/.local/bin/gh`) — filed mkarliner/ThingStudio#21. Not a package; no version pin
-  needed by the ledger rules (nothing that runs on Mike's boards).
+- Built in `$HOME/work` (outside the repository and the shared folder): ThingStudio `main` at
+  a57d686b85dc74ae7e3f7240536ad3c40d406fe9 (git clone + `make`: npm from its committed lockfile,
+  `pip --require-hashes` into its own `.venv`, `npm run build:cli`) and MicroPython v1.29.0 at
+  0fd6c573ea815774668bbb16b8e197c8822368b2 (git clone + submodules at the pin's recorded commits,
+  `make -C ports/unix`). Nothing was installed into `~/.thingstudio`; `make` linked
+  `~/.local/bin/thingstudio-backend` to the work-folder build, as its documented From-source route does.
+- Read: the published user guide on 2026-11-27 (home, getting-started, installation-details, custom-nodes —
+  twice, node-conventions, udp send, mqtt subscribe, http request, editor-in-depth, check-a-flow, FAQ).
+- The device shell's own `git`, `python3` (3.13.5), `node` (v22.23.4) and `make` (4.4.1); `gh` filed the
+  issue. No other packages fetched.

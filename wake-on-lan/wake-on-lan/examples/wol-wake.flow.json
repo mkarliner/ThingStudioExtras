@@ -1,0 +1,48 @@
+{
+  "formatVersion": 1,
+  "flowName": "wol-wake",
+  "nodes": [
+    {
+      "id": "wake-timer",
+      "type": "thingstudio/timer",
+      "properties": {
+        "intervalMs": 60000
+      }
+    },
+    {
+      "id": "wake-payload",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "# the payload is a dict: the target's MAC, and (optionally) its IP.\n# Leave 'ip' out to send to the broadcast, the whole network.\nmsg['payload'] = {\n    'mac': 'AA:BB:CC:DD:EE:FF',\n    'ip': '192.168.1.50',\n}\nreturn msg\n"
+      }
+    },
+    {
+      "id": "wake",
+      "type": "wol/wol",
+      "properties": {
+        "port": 9,
+        "repeats": 3,
+        "wifi": "8f0e6b7a-1c2d-4e5f-9a0b-1c2d3e4f5a6b"
+      }
+    }
+  ],
+  "edges": [
+    ["wake-timer", 0, "wake-payload", 0],
+    ["wake-payload", 0, "wake", 0]
+  ],
+  "layout": {
+    "wake-timer": { "pos": [60, 100], "size": [130, 34] },
+    "wake-payload": { "pos": [260, 100], "size": [130, 34] },
+    "wake": { "pos": [460, 100], "size": [130, 34] }
+  },
+  "configs": [
+    {
+      "id": "8f0e6b7a-1c2d-4e5f-9a0b-1c2d3e4f5a6b",
+      "type": "thingstudio/config/wifi",
+      "properties": {
+        "credentialName": "kitchen",
+        "security": "password"
+      }
+    }
+  ]
+}

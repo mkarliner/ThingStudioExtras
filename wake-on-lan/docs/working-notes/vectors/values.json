@@ -1,0 +1,120 @@
+{
+  "mac": [
+    {
+      "input": "AA:BB:CC:DD:EE:FF",
+      "expect": "aabbccddeeff"
+    },
+    {
+      "input": "aa:bb:cc:dd:ee:ff",
+      "expect": "aabbccddeeff"
+    },
+    {
+      "input": "aa-bb-cc-dd-ee-ff",
+      "expect": "aabbccddeeff"
+    },
+    {
+      "input": "aa.bb.cc.dd.ee.ff",
+      "expect": "aabbccddeeff"
+    },
+    {
+      "input": "AABBCCDDEEFF",
+      "expect": "aabbccddeeff"
+    },
+    {
+      "input": "a1:b2:c3:d4:e5:f6",
+      "expect": "a1b2c3d4e5f6"
+    },
+    {
+      "input": "00:11:22:33:44:55",
+      "expect": "001122334455"
+    },
+    {
+      "input": "GG:BB:CC:DD:EE:FF",
+      "error": "wol: 'GG:BB:CC:DD:EE:FF' is not a MAC address -- 6 byte pairs, hex, e.g. AA:BB:CC:DD:EE:FF"
+    },
+    {
+      "input": "AA:BB:CC:DD:EE",
+      "error": "wol: 'AA:BB:CC:DD:EE' is not a MAC address -- 6 byte pairs, hex, e.g. AA:BB:CC:DD:EE:FF"
+    },
+    {
+      "input": "AA:BB:CC:DD:EE:FF:00",
+      "error": "wol: 'AA:BB:CC:DD:EE:FF:00' is not a MAC address -- 6 byte pairs, hex, e.g. AA:BB:CC:DD:EE:FF"
+    },
+    {
+      "input": "AA BB CC DD EE FF",
+      "error": "wol: 'AA BB CC DD EE FF' is not a MAC address -- 6 byte pairs, hex, e.g. AA:BB:CC:DD:EE:FF"
+    },
+    {
+      "input": 42,
+      "error": "wol: the payload's 'mac' must be a string, got 42"
+    },
+    {
+      "input": null,
+      "error": "wol: the payload's 'mac' must be a string, got None"
+    }
+  ],
+  "dest": [
+    {
+      "input": null,
+      "expect": "255.255.255.255"
+    },
+    {
+      "input": "",
+      "expect": "255.255.255.255"
+    },
+    {
+      "input": "   ",
+      "error": "wol: '   ' is not an IPv4 address, e.g. 192.168.1.50"
+    },
+    {
+      "input": "192.168.1.50",
+      "expect": "192.168.1.50"
+    },
+    {
+      "input": " 10.0.0.1 ",
+      "expect": "10.0.0.1"
+    },
+    {
+      "input": "1.2.3.4",
+      "expect": "1.2.3.4"
+    },
+    {
+      "input": "255.255.255.255",
+      "expect": "255.255.255.255"
+    },
+    {
+      "input": "300.1.1.1",
+      "error": "wol: '300.1.1.1' is not an IPv4 address, e.g. 192.168.1.50"
+    },
+    {
+      "input": "192.168.1",
+      "error": "wol: '192.168.1' is not an IPv4 address, e.g. 192.168.1.50"
+    },
+    {
+      "input": "192.168.1.1.1",
+      "error": "wol: '192.168.1.1.1' is not an IPv4 address, e.g. 192.168.1.50"
+    },
+    {
+      "input": "192.168.01.10",
+      "error": "wol: '192.168.01.10' is not an IPv4 address, e.g. 192.168.1.50"
+    },
+    {
+      "input": "192.168.1.x",
+      "error": "wol: '192.168.1.x' is not an IPv4 address, e.g. 192.168.1.50"
+    },
+    {
+      "input": 192,
+      "error": "wol: the payload's 'ip' must be a string, got 192"
+    }
+  ],
+  "packet": [
+    {
+      "mac": "aabbccddeeff",
+      "expect": "ffffffffffffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeffaabbccddeeff"
+    },
+    {
+      "mac": "001122334455",
+      "expect": "ffffffffffff001122334455001122334455001122334455001122334455001122334455001122334455001122334455001122334455001122334455001122334455001122334455001122334455001122334455001122334455001122334455001122334455"
+    }
+  ]
+}

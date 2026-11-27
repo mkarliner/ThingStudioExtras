@@ -1,0 +1,44 @@
+{
+  "type": "wol/wol",
+  "kind": "sink",
+  "label": "wol",
+  "group": "network",
+  "color": "#4caf50",
+  "bgcolor": "#1b3a1e",
+  "icon": "⚡",
+  "description": "Sends a Wake-on-LAN magic packet. Payload is a dict with the target's MAC address; an ip entry sets the destination (default: broadcast).",
+  "requires": { "capabilities": ["wifi"] },
+  "ports": {
+    "inputs": [
+      { "name": "msg", "type": "any" }
+    ]
+  },
+  "properties": [
+    {
+      "name": "port",
+      "label": "port",
+      "kind": "number",
+      "default": 9,
+      "min": 1,
+      "max": 65535,
+      "help": "Destination UDP port. 9 is the Wake-on-LAN default; some machines listen on 7."
+    },
+    {
+      "name": "repeats",
+      "label": "repeats",
+      "kind": "number",
+      "default": 1,
+      "min": 1,
+      "max": 10,
+      "help": "How many times to send the packet. Broadcasts can be dropped; 3 is a common choice."
+    },
+    {
+      "name": "wifi",
+      "label": "WiFi",
+      "kind": "configRef",
+      "configType": "thingstudio/config/wifi",
+      "singleton": true,
+      "default": ""
+    }
+  ]
+}

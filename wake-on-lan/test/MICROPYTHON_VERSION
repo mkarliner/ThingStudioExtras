@@ -1,0 +1,6 @@
+# The MicroPython build this node set's tests run the board code against (the unix port).
+# Change it when the set moves to a newer MicroPython; commit is the full hash, and
+# test/setup.sh checks out exactly this and fails on anything else.
+version: v1.29.0
+commit: 0fd6c573ea815774668bbb16b8e197c8822368b2
+date: 2026-08-24
