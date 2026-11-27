@@ -1,7 +1,6 @@
 # Source build fails on Python 3.10, which the guide says is enough
 
-**Type: core** (the requirements and the stated minimum disagree; which one changes is core's call). Status: not
-filed.
+**Type: core** (the requirements and the stated minimum disagree; which one changes is core's call). Status: filed as [#23](https://github.com/mkarliner/ThingStudio/issues/23) on 2026-11-27, then found already fixed on `main` by b5b83cdb (3.11 minimum, `make` checks it). #23 closed with a note, 2026-11-27.
 
 ## What we were trying to do
 

@@ -1,6 +1,6 @@
 # thingstudio-compile --describe doesn't see custom nodes
 
-**Type: core** (or **docs**, if built-ins only is intended). Status: not filed.
+**Type: core** (or **docs**, if built-ins only is intended). Status: filed as [#26](https://github.com/mkarliner/ThingStudio/issues/26), 2026-11-27.
 
 ## What we were trying to do
 

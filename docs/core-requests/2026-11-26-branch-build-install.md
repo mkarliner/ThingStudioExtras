@@ -1,6 +1,6 @@
 # Installing a named branch build
 
-**Type: docs.** Status: not filed.
+**Type: docs.** Status: done on `main` by b5b83cdb (2026-11-26), found when filing on 2026-11-27; no PR needed.
 
 ## What we were trying to do
 

@@ -1,6 +1,6 @@
 # thingstudio-compile for users who installed a release
 
-**Type: core** (could be answered by docs if source-only is intended). Status: not filed.
+**Type: core** (could be answered by docs if source-only is intended). Status: filed as [#22](https://github.com/mkarliner/ThingStudio/issues/22), 2026-11-27. The docs side is done on `main` by 00b98637 (Check a flow says it needs a source build "yet"); the core ask is open.
 
 ## What we were trying to do
 

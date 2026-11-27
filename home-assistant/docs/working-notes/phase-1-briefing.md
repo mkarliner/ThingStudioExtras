@@ -73,17 +73,20 @@ From the repository root. On 2026-11-26: compile 22 cases, 0 failed, 2 known gap
 
 ## Core requests (in `docs/core-requests/`)
 
-None filed: this session had no GitHub access to ThingStudio. Mike asked the session to file them; it needs that
-access (or Mike files them from the files).
+Filed 2026-11-27 with a token Mike put in `env.sh` (`THINGSTUDIO_GITHUB_TOKEN`). It can create, comment on and close issues
+(Issues: read and write).
 
-| Request | Type |
-|---|---|
-| `2026-11-26-branch-build-install` | docs (proposed text included) |
-| `2026-11-26-compile-cli-for-installed-users` | core |
-| `2026-11-26-python-3-10-source-build` | core |
-| `2026-11-26-ts-mqtt-client-for-nodes` | docs |
-| `2026-11-26-runtime-version-for-nodes` | core |
-| `2026-11-26-describe-custom-nodes` | core |
+| Request | Type | Where |
+|---|---|---|
+| `2026-11-26-branch-build-install` | docs | Already done on `main` (b5b83cdb). No PR. |
+| `2026-11-26-python-3-10-source-build` | core | #23, closed: already fixed on `main` (b5b83cdb). |
+| `2026-11-26-compile-cli-for-installed-users` | core | #22. Docs side done on `main` (00b98637), noted on the issue; the core ask stays open. |
+| `2026-11-26-ts-mqtt-client-for-nodes` | docs | #24 (related: #21, from the wake-on-lan set) |
+| `2026-11-26-runtime-version-for-nodes` | core | #25 |
+| `2026-11-26-describe-custom-nodes` | core | #26 |
+
+Lesson: check `main`'s user guide before filing. The pin (8f8d137b) is behind `main` (67e9fc26, 5 commits ahead,
+and it contains the pin), so a gap at the pin may already be fixed.
 
 ## Decisions (Mike)
 
@@ -101,7 +104,7 @@ access (or Mike files them from the files).
 
 ## Next
 
-1. File the six requests once the session has GitHub access (or Mike files them); add the links to each file.
+1. Mike: move the pin to `main`?
 2. Mike: wait on the MQTT request, or go on with 1.9 meanwhile? And `any` inputs for `ha number` / `ha select`?
 3. 1.9 on the C3 (Mike at the board), then the Freenove S3.
 4. 1.6 (which also closes the §8 gap), then 1.10.

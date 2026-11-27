@@ -1,6 +1,6 @@
 # Reading the device runtime version from a custom node
 
-**Type: core.** Status: not filed.
+**Type: core.** Status: filed as [#25](https://github.com/mkarliner/ThingStudio/issues/25), 2026-11-27.
 
 ## What we were trying to do
 

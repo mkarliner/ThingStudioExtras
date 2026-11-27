@@ -1,7 +1,7 @@
 # The MQTT client calls a custom node needs, and ts_wifi
 
 **Type: docs** (or **core**, if these calls aren't meant for custom nodes; then a node needs some documented way to
-publish, subscribe and receive on the shared client). Status: not filed.
+publish, subscribe and receive on the shared client). Status: filed as [#24](https://github.com/mkarliner/ThingStudio/issues/24), 2026-11-27. Related: [#21](https://github.com/mkarliner/ThingStudio/issues/21) (the same `ts_wifi` question from a non-MQTT node).
 
 ## What we were trying to do
 
