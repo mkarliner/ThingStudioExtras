@@ -1,5 +1,6 @@
 # The ThingStudio build this node set is developed and tested against.
 # Change it when the set moves to a newer build; the bundle README names the minimum for users.
 # commit is the full hash: test/setup.sh checks out exactly this and fails on anything else.
+tag: v0.14.0 (setup.sh checks only the commit below)
 branch: main
-commit: a57d686b85dc74ae7e3f7240536ad3c40d406fe9 (2026-11-27)
+commit: 416f886f632bda1cd1cfa854afe78998bceaa8a4 (2026-11-27)

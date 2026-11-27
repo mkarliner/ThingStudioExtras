@@ -5,7 +5,7 @@ entity nodes in a flow, deploy, and the board shows up in Home Assistant with it
 larger example: a shared library, generated compile hooks and an external contract.
 
 **Status:** work in progress: compile-, vector- and MQTT-tested; the hardware pass is partly done (kitchen-sink C3)
-· **ThingStudio:** `main` @ a57d686b (2026-11-27) or newer · **Nodes:** `ha device`, `ha sensor`,
+· **ThingStudio:** App v0.14.0 or later · **Nodes:** `ha device`, `ha sensor`,
 `ha binary sensor`, `ha switch`, `ha number`, `ha select`, `ha button`
 
 | Doc | For |

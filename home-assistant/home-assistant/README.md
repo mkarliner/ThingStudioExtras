@@ -18,10 +18,8 @@ The nodes are in the palette's **home assistant** group.
 
 ## What you need
 
-- **ThingStudio App**, built from `main` on 2026-11-27 or later (commit a57d686b). No release includes everything
-  these nodes use yet (the latest, v0.13.0, is from 2026-11-18), so build from source and check out `main`: see the
-  user guide, *Installation details*, "A feature that isn't released yet". A release that includes it will be named
-  here. ThingStudio Web, the browser version, won't do: it has no custom nodes.
+- **ThingStudio App v0.14.0 or later**, installed the user guide's normal way (*Getting started*, "Step 1: Install
+  ThingStudio"). ThingStudio Web, the browser version, won't do: it has no custom nodes.
 - **A board with WiFi**, set up in ThingStudio as the user guide describes. The nodes were developed on an ESP32-C3
   and an ESP32-S3.
 - **Home Assistant with an MQTT broker** and its MQTT integration (below).
@@ -31,9 +29,12 @@ The nodes are in the palette's **home assistant** group.
 ThingStudio's user guide (**Help → User guide** in the editor) takes a new board to a blinking LED. For these nodes,
 follow it with these choices:
 
-1. **Install ThingStudio** from source, as above (*Installation details*, "From source").
-2. **Install MicroPython** with **Tools → Install firmware…** (*Step 3*). On an ESP32-C3, or a classic ESP32
-   without PSRAM, pick **ThingStudio custom image**: WiFi, MQTT and these nodes need the memory it frees.
+1. **Install ThingStudio App** (*Getting started*, "Step 1: Install ThingStudio"): download a package from the
+   releases page, or run the installer script.
+2. **Install MicroPython** with **Tools → Install firmware…** (*Step 3*). On an ESP32-C3, an ESP32-C5 or a classic
+   ESP32 without PSRAM, pick **ThingStudio custom image**: WiFi, MQTT and these nodes need the memory it frees. Take
+   the newest **Version**: it is the runtime version the image carries (*Custom firmware*). If the board's runtime
+   doesn't match your ThingStudio, Deploy stops and the console says to install the runtime again (*Step 5*).
 3. **Connect** the board and **install the runtime** (*Steps 4 and 5*).
 4. **Name the board and give it a password**, in **Tools → Board settings…** (*Connecting over WiFi*). With a
    password you can deploy over WiFi once the board is in place, away from your computer. Home Assistant shows the
