@@ -15,7 +15,7 @@ destination entry (§1 of the SPEC).
 |---|---|
 | Design: descriptor, payload contract, behaviour, errors, test plan | Settled 2026-11-27 — below. |
 | Node files | Done: `wake-on-lan/wake-on-lan/` (`wol.node.json`, `wol.node.py`, `wol.compile.py`, `lib/wol_packet.py`, `README.md`, `examples/wol-wake.flow.json`). |
-| `SPEC.md` + `vectors/` | Done; vectors pass under CPython (28 checks). The MicroPython pass runs once `test/setup.sh`'s build exists (below). |
+| `SPEC.md` + `vectors/` | Done; vectors pass under CPython and the pinned MicroPython v1.29.0 unix port (28 checks each). |
 | Compile checks | Done: `thingstudio-compile` on the example flow is clean; `wake-on-lan/test/compile_test.py` — 3 cases (ok, no-WiFi, no-capability), all pass. |
 | Board pass (kitchen-sink C3) | Not started: the C3 was not connected on 2026-11-27 (no serial device). Includes the broadcast finding. |
 
@@ -104,8 +104,8 @@ MICROPYPATH=wake-on-lan/wake-on-lan/lib $HOME/work/micropython/ports/unix/build-
 THINGSTUDIO_COMPILE=$HOME/work/ThingStudio/editor/dist-cli/thingstudio-compile.mjs python3 wake-on-lan/test/compile_test.py
 ```
 
-On 2026-11-27: vectors 28 checks, 0 failed (CPython; the MicroPython pass was building), compile 3 cases,
-all pass. Run them after any change to the bundle or the vectors.
+On 2026-11-27: vectors 28 checks, 0 failed under CPython (3.13.5) and MicroPython v1.29.0; compile 3
+cases, all pass. Run them after any change to the bundle or the vectors.
 
 ## Findings on 2026-11-27
 
