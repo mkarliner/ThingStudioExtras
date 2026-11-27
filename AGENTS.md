@@ -16,7 +16,8 @@ working notes of the set you're working on, not the others.
   tools/  hooks/  test/  development-only, never copied
 ```
 
-Repo-wide: `AGENTS.md`, `CLAUDE.md`, and `docs/core-requests/` (requests from any set).
+Repo-wide: `AGENTS.md`, `CLAUDE.md`, `THIRD-PARTY.md` (the third-party ledger), and `docs/core-requests/`
+(requests from any set).
 
 ## We are a ThingStudio user, not a ThingStudio developer (Mike, 2026-11-25)
 
@@ -71,6 +72,35 @@ The user guide states the ones a node author meets. These also apply here:
 - **No trivial implementation that won't scale.** Prefer the comprehensive design, or leave the feature out.
 - **The name is ThingStudio** (capital S) in docs and UI text.
 - Don't use the phrase "load bearing".
+
+## Third-party code: pinned, scriptless, gated (Mike, 2026-11-26; aligned with ThingStudio's rules 2026-11-27)
+
+Anything fetched from outside this repository (Python and npm packages, the ThingStudio and MicroPython builds the
+tests use, toolchains) is code that runs on Mike's machine or his boards. It is untrusted until it is all three:
+
+- **Pinned** to an immutable identifier: a full commit hash, an exact version with its hash, a lockfile. A tag or a
+  branch name can move, so it isn't a pin on its own.
+- **Installed without its own code running:** `npm ci --ignore-scripts`; pip with `--only-binary :all:` (wheels,
+  no build scripts).
+- **Checked by something that fails, not warns, when it changes:** pip `--require-hashes`, `npm ci` against the
+  committed lockfile, a commit check like `home-assistant/test/setup.sh`'s.
+
+And:
+
+- **Warn Mike before adding or installing a package:** name it and say why. Prefer fewer dependencies and
+  sanity-check a new one (maintenance, install scripts). A bundle's board code uses MicroPython and what the user
+  guide documents, nothing else.
+- **npm:** `npm ci`, never a bare `npm install` once a lockfile exists, and commit the lockfile. No git-URL
+  dependencies. No bulk upgrades (`npm update`, `ncu -u`): review each. Never an arbitrary `npx <package>`; `npx --no`
+  for one that isn't already a dependency.
+- **Prefer a tool that's already installed** (the device shell has `uv`) to fetching one.
+- **Install instructions never give `curl | sh` alone:** a plain download (a releases page) alongside, as an equal
+  choice, and how to read the script first.
+- **Ledger:** every third-party dependency of a bundle, tool or test gets a line in `THIRD-PARTY.md` in the same
+  change, with version and licence from the package's own metadata.
+- **Briefings** name every toolchain the session used and what was fetched, from where, at which version, including
+  commands that didn't work.
+- **Never install or build against the shared folder** (CLAUDE.md): work in the session's own workspace.
 
 ## Secrets
 

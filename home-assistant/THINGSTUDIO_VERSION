@@ -1,4 +1,5 @@
 # The ThingStudio build this node set is developed and tested against.
 # Change it when the set moves to a newer build; the bundle README names the minimum for users.
+# commit is the full hash: test/setup.sh checks out exactly this and fails on anything else.
 branch: user-libraries
-commit: 8f8d137b (2026-11-25)
+commit: 8f8d137ba7bdfc66e45048d819a4b6dafa987888 (2026-11-25)

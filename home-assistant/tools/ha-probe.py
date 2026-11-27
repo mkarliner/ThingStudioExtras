@@ -13,7 +13,8 @@
 #   7. whether a "None" state (or clearing the retained state) makes HA show an entity as unknown
 # It leaves nothing behind: every retained message it set is cleared at the end, also on Ctrl-C.
 #
-# Needs: pip install paho-mqtt (2.x). Settings come from the environment, never the repo:
+# Needs paho-mqtt, pinned with its hash: pip install --require-hashes --only-binary :all: --no-deps -r
+# home-assistant/tools/requirements.txt. Settings come from the environment, never the repo:
 #   HA_URL (e.g. http://homeassistant.local:8123), HA_TOKEN (a long-lived token from your HA profile),
 #   MQTT_HOST, MQTT_PORT (default 1883), MQTT_USER, MQTT_PASSWORD (both optional).
 
@@ -27,7 +28,7 @@ import urllib.request
 try:
     import paho.mqtt.client as mqtt
 except ImportError:
-    sys.exit("ha-probe: needs paho-mqtt 2.x -- pip install paho-mqtt")
+    sys.exit("ha-probe: needs paho-mqtt -- pip install --require-hashes --only-binary :all: --no-deps -r home-assistant/tools/requirements.txt")
 
 PREFIX = "homeassistant"
 CHIP = "testprobe"

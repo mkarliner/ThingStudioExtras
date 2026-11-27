@@ -8,7 +8,8 @@
 # Which devices: by default those whose HA name starts with "ts-test" (how test boards are named). --name PREFIX
 # picks another prefix, --device ts_<chip id> one device. Lists what it found and stops unless --yes is given.
 #
-# Needs: pip install paho-mqtt (2.x). Broker settings from the environment: MQTT_HOST, MQTT_PORT (default 1883),
+# Needs paho-mqtt, pinned with its hash: pip install --require-hashes --only-binary :all: --no-deps -r
+# home-assistant/tools/requirements.txt. Broker settings from the environment: MQTT_HOST, MQTT_PORT (default 1883),
 # MQTT_USER, MQTT_PASSWORD. --prefix if your discovery prefix isn't homeassistant.
 
 import argparse
@@ -20,7 +21,7 @@ import time
 try:
     import paho.mqtt.client as mqtt
 except ImportError:
-    sys.exit("ha-cleanup: needs paho-mqtt 2.x -- pip install paho-mqtt")
+    sys.exit("ha-cleanup: needs paho-mqtt -- pip install --require-hashes --only-binary :all: --no-deps -r home-assistant/tools/requirements.txt")
 
 
 def main():

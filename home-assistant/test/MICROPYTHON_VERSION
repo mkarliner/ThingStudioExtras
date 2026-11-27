@@ -1,0 +1,4 @@
+# The MicroPython the vector tests run under (unix port), the release the boards run.
+# commit is the full hash: test/setup.sh checks out exactly this and fails on anything else.
+tag: v1.29.0
+commit: 0fd6c573ea815774668bbb16b8e197c8822368b2
