@@ -5,7 +5,7 @@
 # state_payload, command_value, and that ha device's hook sizes discovery exactly. The MQTT side is mqtt_test.py.
 #
 #   MICROPYPATH=home-assistant/test/doubles:home-assistant/home-assistant/lib:<micropython>/extmod \
-#       micropython home-assistant/test/vectors_test.py home-assistant/docs/working-notes/vectors
+#       micropython home-assistant/test/vectors_test.py home-assistant/docs/vectors
 #
 # The unix port's floats are double precision; the ESP32 boards' are single. Float payloads are checked on the board
 # in the hardware pass (plan 1.9).
@@ -72,7 +72,7 @@ def run(folder):
     # ha device's compile hook sizes the discovery message (SPEC §8) without json; its count must be the board's
     # json.dumps byte count exactly. The hook file has no imports, so it runs here as it is.
     hook = {}
-    with open(folder + '/../../../home-assistant/ha_device.compile.py') as f:
+    with open(folder + '/../../home-assistant/ha_device.compile.py') as f:
         exec(f.read(), hook)
     sized = [case['payload'] for case in load(folder, 'discovery.json')['cases']]
     sized.append({'name': 'Température « salon » \u2014 \U0001F321', 'esc': 'a"b\\c\n\t\x01', 'n': [0, -3, 2.5, 1e-07],

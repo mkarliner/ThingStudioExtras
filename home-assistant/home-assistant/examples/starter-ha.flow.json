@@ -1,0 +1,256 @@
+{
+ "formatVersion": 1,
+ "flowName": "starter-ha",
+ "nodes": [
+  {
+   "id": "hadev",
+   "type": "ha/device",
+   "properties": {
+    "deviceName": "",
+    "area": "",
+    "prefix": "homeassistant",
+    "brokerConfigId": "ef01cb90-dda3-4708-86a0-c7d52db02539",
+    "wifiConfigId": "1b1ff863-cb83-4567-af04-4d720eee028b"
+   }
+  },
+  {
+   "id": "hadbg",
+   "type": "thingstudio/debug",
+   "properties": {
+    "fullMessage": false
+   }
+  },
+  {
+   "id": "tick",
+   "type": "thingstudio/timer",
+   "properties": {
+    "intervalMs": 30000
+   }
+  },
+  {
+   "id": "upfn",
+   "type": "thingstudio/function",
+   "properties": {
+    "code": "import time\nmsg['payload'] = time.ticks_ms() // 1000\nreturn msg",
+    "outputCount": 1,
+    "label": "uptime"
+   }
+  },
+  {
+   "id": "haup",
+   "type": "ha/sensor",
+   "properties": {
+    "name": "Uptime",
+    "deviceClass": "duration",
+    "unit": "s",
+    "stateClass": "measurement",
+    "icon": ""
+   }
+  },
+  {
+   "id": "memfn",
+   "type": "thingstudio/function",
+   "properties": {
+    "code": "import gc\ngc.collect()\nmsg['payload'] = gc.mem_free() // 1024\nreturn msg",
+    "outputCount": 1,
+    "label": "free memory"
+   }
+  },
+  {
+   "id": "hamem",
+   "type": "ha/sensor",
+   "properties": {
+    "name": "Free memory",
+    "deviceClass": "none",
+    "unit": "KB",
+    "stateClass": "measurement",
+    "icon": "mdi:memory"
+   }
+  },
+  {
+   "id": "hatest",
+   "type": "ha/switch",
+   "properties": {
+    "name": "Test switch",
+    "deviceClass": "none"
+   }
+  },
+  {
+   "id": "testfn",
+   "type": "thingstudio/function",
+   "properties": {
+    "code": "return msg",
+    "outputCount": 1,
+    "label": "report it back"
+   }
+  },
+  {
+   "id": "testdbg",
+   "type": "thingstudio/debug",
+   "properties": {
+    "fullMessage": false
+   }
+  },
+  {
+   "id": "hahello",
+   "type": "ha/button",
+   "properties": {
+    "name": "Hello"
+   }
+  },
+  {
+   "id": "hellodbg",
+   "type": "thingstudio/debug",
+   "properties": {
+    "fullMessage": false
+   }
+  }
+ ],
+ "edges": [
+  [
+   "hadev",
+   0,
+   "hadbg",
+   0
+  ],
+  [
+   "tick",
+   0,
+   "upfn",
+   0
+  ],
+  [
+   "upfn",
+   0,
+   "haup",
+   0
+  ],
+  [
+   "tick",
+   0,
+   "memfn",
+   0
+  ],
+  [
+   "memfn",
+   0,
+   "hamem",
+   0
+  ],
+  [
+   "hatest",
+   0,
+   "testfn",
+   0
+  ],
+  [
+   "testfn",
+   0,
+   "hatest",
+   0
+  ],
+  [
+   "testfn",
+   0,
+   "testdbg",
+   0
+  ],
+  [
+   "hahello",
+   0,
+   "hellodbg",
+   0
+  ]
+ ],
+ "layout": {
+  "hadev": {
+   "pos": [
+    80,
+    80
+   ]
+  },
+  "hadbg": {
+   "pos": [
+    300,
+    80
+   ]
+  },
+  "tick": {
+   "pos": [
+    80,
+    180
+   ]
+  },
+  "upfn": {
+   "pos": [
+    300,
+    180
+   ]
+  },
+  "haup": {
+   "pos": [
+    520,
+    180
+   ]
+  },
+  "memfn": {
+   "pos": [
+    300,
+    250
+   ]
+  },
+  "hamem": {
+   "pos": [
+    520,
+    250
+   ]
+  },
+  "hatest": {
+   "pos": [
+    520,
+    350
+   ]
+  },
+  "testfn": {
+   "pos": [
+    300,
+    350
+   ]
+  },
+  "testdbg": {
+   "pos": [
+    520,
+    420
+   ]
+  },
+  "hahello": {
+   "pos": [
+    80,
+    520
+   ]
+  },
+  "hellodbg": {
+   "pos": [
+    300,
+    520
+   ]
+  }
+ },
+ "configs": [
+  {
+   "id": "1b1ff863-cb83-4567-af04-4d720eee028b",
+   "type": "thingstudio/config/wifi",
+   "properties": {
+    "credentialName": "home-wifi",
+    "security": "password"
+   }
+  },
+  {
+   "id": "ef01cb90-dda3-4708-86a0-c7d52db02539",
+   "type": "thingstudio/config/mqtt-broker",
+   "properties": {
+    "credentialName": "home-assistant-mqtt"
+   }
+  }
+ ]
+}

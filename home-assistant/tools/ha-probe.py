@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # home-assistant/tools/ha-probe.py -- Phase 1 task 1.2 of home-assistant/docs/working-notes/implementation-plan.md.
 #
-# Publishes home-assistant/docs/working-notes/SPEC.md's messages for a fake board ("ts-test-probe") and reads back
+# Publishes home-assistant/docs/SPEC.md's messages for a fake board ("ts-test-probe") and reads back
 # what Home Assistant made of them through its REST API, to settle SPEC §10 before the spec is frozen:
 #   1. the abbreviated device-discovery message creates one device with every entity type
 #   2. whether the origin ("o") is enforced

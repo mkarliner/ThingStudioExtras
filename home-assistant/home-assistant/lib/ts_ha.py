@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # home-assistant/home-assistant/lib/ts_ha.py
 #
-# The board side of home-assistant/docs/working-notes/SPEC.md (v1): Home Assistant MQTT discovery for ThingStudio's
+# The board side of home-assistant/docs/SPEC.md (v1): Home Assistant MQTT discovery for ThingStudio's
 # ha_* nodes. One module, so its state is shared by every HA node in the flow (plan task 1.3).
 #
 #   ha_device:  configure_device(...) at setup; await ha_status(node_id) in its wait() for HA's online/offline

@@ -139,4 +139,7 @@ boards may need the matching runtime before the hardware pass.
    discovery), `ha-cleanup.py`, and the S3. New since the first pass, worth watching: `dev.sw` is gone from the device
    page, and the 4 KB check.
 2. File `function-into-typed-inputs`. After 1.9: decide the set's public URL and file `ha-bundle-pointer`.
-3. Then Phase 2 (first-install path), or Phase S.
+3. Phase 2 walked on paper (`phase-2-first-install.md`): its board checks join the 1.9 run (board name as HA device
+   name, the starter example with its unsaved credentials, a WiFi deploy). A ThingStudio release that includes
+   a57d686b would remove the source build from the HA user's path.
+4. Then Phase S, or Phase 3 (the add-on).

@@ -32,13 +32,13 @@ it passes, so the case gets promoted.
 
 ## SPEC vectors: `vectors_test.py`
 
-`ts_ha`'s pure functions against `../docs/working-notes/vectors/` (SPEC §9), and `ha device`'s hook's JSON sizing
+`ts_ha`'s pure functions against `../docs/vectors/` (SPEC §9), and `ha device`'s hook's JSON sizing
 against the board's own `json.dumps` (SPEC §8), under the MicroPython unix port
 (`setup.sh` builds it without frozen modules, so `extmod` on the path supplies `asyncio`), with `doubles/runtime.py`
 written from the user guide:
 
 ```
-MICROPYPATH=home-assistant/test/doubles:home-assistant/home-assistant/lib:$HOME/work/mp/extmod $HOME/work/mp/ports/unix/build-standard/micropython home-assistant/test/vectors_test.py home-assistant/docs/working-notes/vectors
+MICROPYPATH=home-assistant/test/doubles:home-assistant/home-assistant/lib:$HOME/work/mp/extmod $HOME/work/mp/ports/unix/build-standard/micropython home-assistant/test/vectors_test.py home-assistant/docs/vectors
 ```
 
 Run from the repository root. The same script runs under CPython with `PYTHONPATH` in place of `MICROPYPATH`.

@@ -7,7 +7,8 @@ planned in detail when they start.
 
 **Progress, 2026-11-27:** Phase 1 tasks 1.1 to 1.8, 1.10 and 1.11 done, except the ThingStudio pointer in 1.10
 (a docs request, not filed until 1.9 passes). 1.9, the hardware pass, is partly done; Mike runs the rest end to end.
-Status and findings: `phase-1-briefing.md`.
+Status and findings: `phase-1-briefing.md`. Phase 2 walked on paper 2026-11-27 (`phase-2-first-install.md`); its
+board checks go with 1.9, and a ThingStudio release that includes a57d686b would close its main gap.
 
 ## Decisions (Mike, 2026-11-24)
 

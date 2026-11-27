@@ -18,12 +18,29 @@ The nodes are in the palette's **home assistant** group.
 
 ## What you need
 
-- **ThingStudio** built from `main` on 2026-11-27 or later (commit a57d686b). No release includes everything these
-  nodes use yet, so build from source and check out `main`: see the user guide, *Installation details*, "A feature
-  that isn't released yet". A release that includes it will be named here.
+- **ThingStudio App**, built from `main` on 2026-11-27 or later (commit a57d686b). No release includes everything
+  these nodes use yet (the latest, v0.13.0, is from 2026-11-18), so build from source and check out `main`: see the
+  user guide, *Installation details*, "A feature that isn't released yet". A release that includes it will be named
+  here. ThingStudio Web, the browser version, won't do: it has no custom nodes.
 - **A board with WiFi**, set up in ThingStudio as the user guide describes. The nodes were developed on an ESP32-C3
   and an ESP32-S3.
 - **Home Assistant with an MQTT broker** and its MQTT integration (below).
+
+## New to ThingStudio?
+
+ThingStudio's user guide (**Help → User guide** in the editor) takes a new board to a blinking LED. For these nodes,
+follow it with these choices:
+
+1. **Install ThingStudio** from source, as above (*Installation details*, "From source").
+2. **Install MicroPython** with **Tools → Install firmware…** (*Step 3*). On an ESP32-C3, or a classic ESP32
+   without PSRAM, pick **ThingStudio custom image**: WiFi, MQTT and these nodes need the memory it frees.
+3. **Connect** the board and **install the runtime** (*Steps 4 and 5*).
+4. **Name the board and give it a password**, in **Tools → Board settings…** (*Connecting over WiFi*). With a
+   password you can deploy over WiFi once the board is in place, away from your computer. Home Assistant shows the
+   device under the board's hostname unless you give **ha device** a name.
+5. Optional: **blink an LED** (*Step 6*), to check the board works before adding Home Assistant.
+
+Then set up MQTT, install these nodes and deploy the starter example, below.
 
 ## Install
 
@@ -45,10 +62,23 @@ Skip this if Home Assistant already uses an MQTT broker.
 3. **The integration.** Settings → Devices & services. Home Assistant usually offers the discovered MQTT
    integration: click **Configure**. Otherwise add the **MQTT** integration and point it at the add-on.
    Discovery is on by default, with the prefix `homeassistant`.
-4. **In ThingStudio**, add an MQTT broker config: the Home Assistant machine's address, port `1883`, and the user
-   from step 2.
+4. **In ThingStudio**, the flow's MQTT broker is the Home Assistant machine's address, port `1883`, and the user
+   from step 2. The starter example below shows where it goes.
 
 ## Use
+
+The quickest start is `examples/starter-ha.flow.json`. It runs on any board with WiFi and needs no wiring:
+
+1. **File → Open…** the starter example.
+2. Select **ha device**. Its **WiFi** and **MQTT Broker** fields name two credentials, `home-wifi` and
+   `home-assistant-mqtt`, that aren't saved on your computer yet. Click ✎ next to each: it says so. Fill in your
+   network's name and password, and for the broker the Home Assistant machine's address, port `1883` and the MQTT
+   user, then **Save**. The credentials stay on your computer, in `~/.thingstudio/credentials/`, not in the flow.
+3. Pick your board in the **Board** menu if the editor hasn't, and click **Compile → Deploy**.
+4. In Home Assistant, the board appears under Settings → Devices & services → MQTT, with an uptime, its free memory,
+   a test switch and a button.
+
+To build your own flow:
 
 1. Put an **ha device** node in the flow and pick the flow's **WiFi** and **MQTT Broker**.
 2. Add an entity node for each thing Home Assistant should see, and wire it like any other node: a sensor's value
@@ -56,7 +86,7 @@ Skip this if Home Assistant already uses an MQTT broker.
 3. Deploy. The board appears under Settings → Devices & services → MQTT as its hostname, or the **device name** you
    gave **ha device**.
 
-Two example flows are in `examples/`:
+Two more example flows are in `examples/`, for particular boards:
 
 - `kitchen-sink-ha.flow.json`, for the kitchen-sink ESP32-C3 board: the knob, the button, the chip temperature, and
   the RGB LED switched and dimmed from Home Assistant. Its switch and slider are left unwired, to show the echo.
