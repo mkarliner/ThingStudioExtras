@@ -43,3 +43,11 @@ the connection before sending:
 
 UDP has no acknowledgement: a send that succeeds means the board handed the datagram to the network
 stack, not that the target woke.
+
+## Example flows
+
+- `examples/wol-wake.flow.json` — a timer builds the payload dict and wakes one machine (unicast to its
+  IP; drop the `ip` entry to wake on the whole network).
+- `examples/wol-loopback.flow.json` — a self-test: the node wakes the board itself, and a `udp receive`
+  on the same port feeds the received datagram, as hex, to a debug node. Every 10 s the console should
+  show 204 hex characters: `ffffffffffff` + the MAC 16 times. Open it, pick your WiFi config, deploy.

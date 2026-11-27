@@ -87,6 +87,15 @@ all_ok &= check('no-wifi', C3, nowifi, False,
 # the node refuses a board without the wifi capability, naming the node and the capability
 all_ok &= check('no-capability', PICO, base, False,
                 want_error='needs "wifi", which Raspberry Pi Pico (RP2040) doesn\'t provide')
+# the shipped example flows compile clean
+for example in ('wol-wake', 'wol-loopback'):
+    path = os.path.join(os.path.dirname(HERE), 'wake-on-lan', 'examples', example + '.flow.json')
+    r = subprocess.run(['node', CLI, '--board', C3, '--custom-nodes', SET_DIR, path],
+                       capture_output=True, text=True)
+    ok = r.returncode == 0
+    if not ok:
+        print('FAIL example %s:\n%s' % (example, r.stdout + r.stderr))
+        all_ok = False
 
-print('wake-on-lan compile: %d cases, %s' % (3, 'all pass' if all_ok else 'FAILURES'))
+print('wake-on-lan compile: %d cases, %s' % (5, 'all pass' if all_ok else 'FAILURES'))
 sys.exit(0 if all_ok else 1)

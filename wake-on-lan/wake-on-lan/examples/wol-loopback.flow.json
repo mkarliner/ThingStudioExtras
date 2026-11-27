@@ -1,0 +1,76 @@
+{
+  "formatVersion": 1,
+  "flowName": "wol-loopback",
+  "nodes": [
+    {
+      "id": "tick",
+      "type": "thingstudio/timer",
+      "properties": {
+        "intervalMs": 10000
+      }
+    },
+    {
+      "id": "payload",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "import network\n# Wake the board itself: the udp receive below is the proof. 10 s gives the WiFi time to join.\nip = network.WLAN(network.STA_IF).ifconfig()[0]\nmsg['payload'] = {\n    'mac': 'AA:BB:CC:DD:EE:FF',\n    'ip': ip,\n}\nreturn msg\n"
+      }
+    },
+    {
+      "id": "wake",
+      "type": "wol/wol",
+      "properties": {
+        "port": 9,
+        "repeats": 1,
+        "wifi": "8f0e6b7a-1c2d-4e5f-9a0b-1c2d3e4f5a6b"
+      }
+    },
+    {
+      "id": "listen",
+      "type": "thingstudio/udp_receive",
+      "properties": {
+        "port": 9,
+        "pollMs": 20,
+        "wifiConfigId": "8f0e6b7a-1c2d-4e5f-9a0b-1c2d3e4f5a6b"
+      }
+    },
+    {
+      "id": "hexify",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "msg['payload'] = msg['payload'].hex()\nreturn msg\n"
+      }
+    },
+    {
+      "id": "log",
+      "type": "thingstudio/debug",
+      "properties": {
+        "fullMessage": false
+      }
+    }
+  ],
+  "edges": [
+    ["tick", 0, "payload", 0],
+    ["payload", 0, "wake", 0],
+    ["listen", 0, "hexify", 0],
+    ["hexify", 0, "log", 0]
+  ],
+  "layout": {
+    "tick": { "pos": [60, 100], "size": [130, 34] },
+    "payload": { "pos": [260, 100], "size": [130, 34] },
+    "wake": { "pos": [460, 100], "size": [130, 34] },
+    "listen": { "pos": [60, 220], "size": [130, 34] },
+    "hexify": { "pos": [260, 220], "size": [130, 34] },
+    "log": { "pos": [460, 220], "size": [130, 34] }
+  },
+  "configs": [
+    {
+      "id": "8f0e6b7a-1c2d-4e5f-9a0b-1c2d3e4f5a6b",
+      "type": "thingstudio/config/wifi",
+      "properties": {
+        "credentialName": "kitchen",
+        "security": "password"
+      }
+    }
+  ]
+}

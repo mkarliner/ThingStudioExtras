@@ -14,9 +14,9 @@ destination entry (§1 of the SPEC).
 | Task | Status |
 |---|---|
 | Design: descriptor, payload contract, behaviour, errors, test plan | Settled 2026-11-27 — below. |
-| Node files | Done: `wake-on-lan/wake-on-lan/` (`wol.node.json`, `wol.node.py`, `wol.compile.py`, `lib/wol_packet.py`, `README.md`, `examples/wol-wake.flow.json`). |
+| Node files | Done: `wake-on-lan/wake-on-lan/` (`wol.node.json`, `wol.node.py`, `wol.compile.py`, `lib/wol_packet.py`, `README.md`, `examples/wol-wake.flow.json`, `examples/wol-loopback.flow.json`). |
 | `SPEC.md` + `vectors/` | Done; vectors pass under CPython and the pinned MicroPython v1.29.0 unix port (28 checks each). |
-| Compile checks | Done: `thingstudio-compile` on the example flow is clean; `wake-on-lan/test/compile_test.py` — 3 cases (ok, no-WiFi, no-capability), all pass. |
+| Compile checks | Done: `thingstudio-compile` on both example flows is clean; `wake-on-lan/test/compile_test.py` — 5 cases (ok, no-WiFi, no-capability, both example flows), all pass. |
 | Board pass (kitchen-sink C3) | Not started: the C3 was not connected on 2026-11-27 (no serial device). Includes the broadcast finding. |
 
 ## Design (settled 2026-11-27)
@@ -34,6 +34,7 @@ wake-on-lan/
     README.md
   docs/working-notes/     this briefing, SPEC.md, vectors/
   test/                   setup.sh, compile_test.py, vectors_test.py; THINGSTUDIO_VERSION in the set root
+  tools/                  wol-listen.py (host-side board-pass listener, never copied)
 ```
 
 **Kind: `sink`** — one input, **no output**. The user guide is explicit that UDP has no acknowledgement ("a
@@ -63,20 +64,50 @@ which is this set's pin):
 The node's own failure style is pinned in SPEC §6: `ValueError`/`OSError` raised in `run`, `"wol: …"`
 prefix, the offending value named, the remedy stated.
 
-## Open questions to settle on hardware (kitchen-sink C3)
+## Board pass (runbook, kitchen-sink C3)
 
-- **Broadcast.** The guide is silent on sending to `255.255.255.255` / `SO_BROADCAST`. The design defaults to
-  the universal broadcast with `_sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)`; if the board's stack refuses
-  it, the fallback is a directed broadcast computed from `ifconfig` (ip, netmask). Decide on hardware, not
-  from memory.
-- **Test plan.**
-  1. Loopback, no target machine: a flow with a `udp receive` on the node's port plus the `wol` node sending
-     to the board's own IP via the `ip` entry → compare the 102 datagram bytes (6×FF + MAC×16) in the journal.
-  2. Broadcast: a host-side listener (a dev tool, e.g. `tools/wol-listen.py`) on the node's port; doubles as
-     the `SO_BROADCAST` check.
-  3. Error vectors: non-dict payload, missing `mac`, each bad MAC form, bad `ip` → a console line naming the
-     node; and the WiFi-down error by taking the network off.
-  4. Redeploy: the `register_cleanup` socket close must survive a second deploy (no `EADDRINUSE`).
+The only open design question is on this pass: does the board's stack honour
+`SO_BROADCAST`/`255.255.255.255`, or does it want a directed broadcast computed from `ifconfig`? The
+design uses the universal broadcast (`_sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)`); if the stack
+refuses it, the console says `wol: send to 255.255.255.255:9 failed: …` and that is the finding —
+fall back to a directed broadcast only then (a SPEC change, Mike's permission).
+
+On the machine with the board:
+
+```
+# 0. build the pinned tools in a work folder
+bash wake-on-lan/test/setup.sh $HOME/work
+
+# 1. install the bundle the way a user does
+cp -r wake-on-lan/wake-on-lan ~/.thingstudio/custom-nodes/
+
+# 2. start the pinned build's editor, pick the kitchen-sink C3, install the runtime from this build
+#    if the board doesn't have it
+
+# 3. loopback (the byte check; no target machine needed):
+#    File -> Open: wake-on-lan/wake-on-lan/examples/wol-loopback.flow.json
+#    pick your WiFi config, deploy. Every ~10 s the debug node should show 204 hex
+#    characters: ffffffffffff + aabbccddeeff x 16 (SPEC §2).
+
+# 4. broadcast (the SO_BROADCAST check, with a real receiver):
+#    on a host on the same network:  sudo python3 wake-on-lan/tools/wol-listen.py 9
+#    (or set the wol node's port to an unprivileged one, say 9090, and pass that to the listener)
+#    open wol-wake.flow.json, drop the 'ip' entry from the payload, deploy.
+#    the listener should print "magic packet ok (6 x 0xFF + MAC x 16); MAC = aa:bb:cc:dd:ee:ff".
+
+# 5. the error vectors on the console (SPEC §6):
+#    - wire the timer straight into the wol input (a count, not a dict)
+#      -> "wol: payload must be a dict with a 'mac' entry, got 1"
+#    - payload {'mac': 'GG:BB:CC:DD:EE:FF'} -> the not-a-MAC-address line, naming the value
+#    - payload {'mac': '…', 'ip': '300.1.1.1'} -> the not-an-IPv4 line, naming the value
+#    - WiFi down (wrong credential, or the AP off) -> "wol: the flow's WiFi is not connected …"
+
+# 6. the redeploy check: deploy the same flow twice; the second deploy must not fail with
+#    EADDRINUSE (register_cleanup closes the socket).
+```
+
+Record the results in the working notes when the pass is done, and move the SPEC (with Mike's
+permission) if the board says otherwise.
 
 ## Set up the session (the build doesn't survive between sessions)
 
@@ -104,7 +135,7 @@ MICROPYPATH=wake-on-lan/wake-on-lan/lib $HOME/work/micropython/ports/unix/build-
 THINGSTUDIO_COMPILE=$HOME/work/ThingStudio/editor/dist-cli/thingstudio-compile.mjs python3 wake-on-lan/test/compile_test.py
 ```
 
-On 2026-11-27: vectors 28 checks, 0 failed under CPython (3.13.5) and MicroPython v1.29.0; compile 3
+On 2026-11-27: vectors 28 checks, 0 failed under CPython (3.13.5) and MicroPython v1.29.0; compile 5
 cases, all pass. Run them after any change to the bundle or the vectors.
 
 ## Findings on 2026-11-27
@@ -136,13 +167,13 @@ cases, all pass. Run them after any change to the bundle or the vectors.
 
 1. Plug in the kitchen-sink C3 (it was not connected on 2026-11-27), set up the session (above), install the
    runtime from the pinned build's editor.
-2. The board pass per the test plan: loopback byte check, broadcast + `SO_BROADCAST` finding, error vectors
-   on the console, the redeploy socket check. Settle the broadcast question there.
+2. The board pass per the runbook above: loopback byte check, broadcast + `SO_BROADCAST` finding, error
+   vectors on the console, the redeploy socket check. Settle the broadcast question there; record the
+   results in the working notes.
 3. If the board pass moves the design, move the SPEC with it (Mike's permission for the spec) and run the
    vectors in the same change.
-4. Close out: mention the board pass in the bundle `README.md` if it earns a note, and add `tools/` only if
-   the host-side listener stays (a dev tool, never copied, and a `THIRD-PARTY.md` line if it imports
-   anything).
+4. Close out: if the board pass earns a note, put it in the bundle `README.md`; `tools/wol-listen.py`
+   stays a dev tool (never copied, standard library only, no ledger line).
 
 ## Toolchain this session used (named per AGENTS.md, briefings)
 
