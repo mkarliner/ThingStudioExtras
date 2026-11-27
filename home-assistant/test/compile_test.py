@@ -99,10 +99,7 @@ CASES = [
      flow('function-feedback', [device(), tick(), fn('f')] + [n for n in entity_types()
                                                               if n['type'] in ('ha/number', 'ha/select')],
           [('tick', 0, 'f', 0), ('f', 0, 'n1', 0), ('f', 0, 'l1', 0)]),
-     {'ok': True, 'warning_count': 0,
-      'gap': 'their inputs are typed number and string, and a function output (any) only wires to any, bool and '
-             'bytes inputs (Editor in depth, "Wiring"): the "wire the real value back" warning can\'t be followed '
-             'from a function node'}),
+     {'ok': True, 'warning_count': 0}),
     ('a device with no entities warns',
      flow('no-entities', [device()]),
      {'ok': True, 'warnings': ['ha device has no entities'], 'warning_count': 1}),

@@ -1,7 +1,10 @@
-# The MQTT client calls a custom node needs, and ts_wifi
+# Document ts_mqtt and ts_wifi, the core APIs the mqtt nodes use
 
 **Type: docs** (or **core**, if these calls aren't meant for custom nodes; then a node needs some documented way to
 publish, subscribe and receive on the shared client). Status: filed as [#24](https://github.com/mkarliner/ThingStudio/issues/24), 2026-11-27. Related: [#21](https://github.com/mkarliner/ThingStudio/issues/21) (the same `ts_wifi` question from a non-MQTT node).
+
+**Framing (Mike, 2026-11-27):** this is documenting core's own APIs, `ts_mqtt` and `ts_wifi`, which the built-in
+mqtt nodes use and so other nodes can too. Not a separate API for custom nodes.
 
 ## What we were trying to do
 
@@ -49,3 +52,6 @@ statement that a node holding the broker config never touches WiFi itself.
 
 Until this lands, the bundle's MQTT side has no tests here, and it stays on calls the guide doesn't cover (AGENTS.md,
 "Core requests" point 4): Mike to decide whether the hardware pass goes on meanwhile.
+
+**Done, 2026-11-27:** #24 closed by ThingStudio a57d686b (user guide, custom-nodes.md: `ts_wifi` and `ts_mqtt`).
+The HA bundle was checked against it and the pin moved there.

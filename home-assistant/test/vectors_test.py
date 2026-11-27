@@ -2,8 +2,7 @@
 # home-assistant/test/vectors_test.py -- plan task 1.7: ts_ha against the SPEC's vectors (SPEC §9).
 #
 # Runs under the MicroPython unix port (and CPython). Tests ts_ha's pure functions only: build_discovery,
-# state_payload, command_value. The MQTT side waits on core request 2026-11-26-ts-mqtt-client-for-nodes: the user
-# guide doesn't document the client calls it uses, so no double can be written for them yet.
+# state_payload, command_value. The MQTT side is mqtt_test.py.
 #
 #   MICROPYPATH=home-assistant/test/doubles:home-assistant/home-assistant/lib:<micropython>/extmod \
 #       micropython home-assistant/test/vectors_test.py home-assistant/docs/working-notes/vectors

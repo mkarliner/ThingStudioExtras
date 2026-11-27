@@ -8,7 +8,7 @@
   "bgcolor": "#0b4a63",
   "icon": "#",
   "description": "A number in Home Assistant, set with a slider or a box. Sends the value when it's changed in HA. Wire the real value back to the input so HA shows it; left unwired, the node confirms each change itself. Needs an ha device node in the flow.",
-  "ports": { "inputs": [{ "name": "msg", "type": "number" }], "outputs": [{ "name": "msg", "type": "number" }] },
+  "ports": { "inputs": [{ "name": "msg", "type": "any" }], "outputs": [{ "name": "msg", "type": "number" }] },
   "properties": [
     { "name": "name", "label": "name", "kind": "text", "default": "Number" },
     { "name": "min", "label": "min", "kind": "number", "default": 0 },

@@ -1,7 +1,7 @@
 # ha_device: resolves the WiFi and broker credentials (a node's Python sees only a config's name; the hook gets the
 # secrets in referencedConfigs) and checks the flow's HA nodes as a set: one ha device, node ids usable in topics.
-# The derivation is a trimmed copy of the core MQTT nodes' (ThingStudio compile-hooks.ts); plan task 1.6 moves the
-# shared parts into hooks/ with a generator.
+# The WiFi and broker derivation follows the user guide's custom-nodes.md (ts_wifi and ts_mqtt sections, ThingStudio
+# a57d686b); plan task 1.6 moves the shared parts into hooks/ with a generator.
 
 _ID_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-'
 
@@ -47,12 +47,17 @@ def compile(ctx, properties):
     host = str(broker.get('broker') or '').strip()
     if not host:
         return {'errors': ['ha device: the broker config has no broker hostname']}
+    # As the guide's hook: any node holding the flow's broker config is an MQTT node (this one does, so it's True).
+    broker_ids = [c['id'] for c in ctx['flow']['configs'] if c['type'] == 'thingstudio/config/mqtt-broker']
+    defer = any(isinstance(v, str) and v in broker_ids
+                for n in nodes for v in (n.get('properties') or {}).values())
     prefix = str(properties.get('prefix') or 'homeassistant').strip().strip('/')
     return {'warnings': warnings, 'properties': {
         'prefix': prefix or 'homeassistant',
         'ssid': str(wifi.get('ssid') or '').strip(),
         'wifiPassword': str(wifi.get('password') or ''),
         'security': security,
+        'deferToMqtt': defer,
         'broker': host,
         'port': int(broker.get('port') or 1883),
         'username': str(broker.get('username') or ''),

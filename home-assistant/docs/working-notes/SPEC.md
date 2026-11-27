@@ -82,7 +82,8 @@ as parsed objects, not bytes.
 ```
 
 - `dev.name`: `ha_device`'s device name, default the board's hostname. `dev.mdl`: the board definition's name.
-  `dev.sw`: the device runtime version. `dev.sa`: the area, omitted when empty.
+  `dev.sw`: the device runtime version, omitted while there's no documented way for a node to read it
+  (ThingStudio #25); `build_discovery` still supports it. `dev.sa`: the area, omitted when empty.
 - `o.name` is `ThingStudio`; `o.sw` is the HA bundle's version. `o` is required: HA creates nothing without it
   (§10).
 - `avty_t` at the root applies to every component (`online`/`offline` are HA's defaults, so no `pl_avail`).
