@@ -79,12 +79,17 @@ Examples, all left to right, nothing wired back, no startup nodes: `kitchen-sink
 `thingstudio-compile --relayout` and pass `--layout --strict` with 0 warnings.
 
 Tests (2026-11-28, at v0.14.0 = `416f886f`): compile 33 cases (the old "unwired inputs warn" case now expects 0
-warnings; five new `on start` cases), vectors 48, mqtt 42 (new `on_start_and_restore`), all under MicroPython and
+warnings; five new `on start` cases), vectors 48, mqtt 48 (new `on_start_and_restore`, plus `entity_nodes_pass_start`
+after the board pass caught the binary sensor's missing start value), all under MicroPython and
 CPython. `docs/check-docs.py`: 0 failures; `docs/how-it-works.md` written (the author-reader gap closed, its
 KNOWN GAP entry removed), leaving only the descriptors' missing help on the old properties.
 
-Still to do on the board (item 3 below): after a redeploy and after a reboot, HA shows the start values — and
-the restored values with `restore` — without anyone pressing anything.
+Board pass, started on the C3 (2026-11-28): the LED and Brightness start values worked, but the Button came up
+unknown despite on start `off` — the binary sensor's node file didn't hand its start value to `ts_ha.register`,
+and a binary sensor's start value only goes out on the first connect, read back from what `register` stored.
+Fixed, with a regression test that execs every entity's node file (`entity_nodes_pass_start`, mqtt 48 checks).
+Remaining on the board: after a redeploy and after a reboot, HA shows the start values — and the restored
+values with `restore` — without anyone pressing anything.
 
 ## Next, in order
 

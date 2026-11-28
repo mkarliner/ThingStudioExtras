@@ -256,11 +256,42 @@ async def ha_device_node(folder):
         del sys.modules['network']
 
 
+async def entity_nodes_pass_start(folder):
+    """SPEC v1.2: every entity node's register() hands the hook's on-start value to ts_ha. The kitchen-sink
+    board pass caught this: the binary sensor's node file didn't, and its start value (which only goes out on
+    the first connect, read back from what register stored) came up unknown."""
+    real_chip_id = ts_ha.chip_id
+    ts_ha.chip_id = lambda: CHIP
+    cases = (
+        ('b', 'ha_binary_sensor.node.py', False, {'p': 'binary_sensor', 'name': 'Button'}),
+        ('w', 'ha_switch.node.py', True, {'p': 'switch', 'name': 'LED'}),
+        ('n', 'ha_number.node.py', 32, {'p': 'number', 'name': 'Brightness', 'min': 0, 'max': 255, 'step': 1,
+                                       'mode': 'slider'}),
+        ('s', 'ha_select.node.py', 'on', {'p': 'select', 'name': 'Mode', 'ops': ['off', 'on']}),
+        ('p', 'ha_button.node.py', None, {'p': 'button', 'name': 'Hello'}),
+        ('t', 'ha_sensor.node.py', None, {'p': 'sensor', 'name': 'Knob'}),
+    )
+    try:
+        for nid, fname, start, comp in cases:
+            fresh()
+            c = client()
+            ts_ha.configure_device(c, 'dev', 'kitchen', chip=CHIP)
+            with open(folder + '/' + fname) as f:
+                code = f.read()
+            g = {'properties': {'nodeId': nid, 'component': comp, 'start': start, 'echo': False, 'name': 'X'},
+                 'runtime': runtime, '__name__': fname}
+            exec(code, g)
+            check('%s passes its on-start value to ts_ha' % fname, ts_ha.start_value(nid), start)
+    finally:
+        ts_ha.chip_id = real_chip_id
+
+
 async def main(folder):
     await first_connect()
     await state_before_first_connect()
     await states_and_commands()
     await on_start_and_restore()
+    await entity_nodes_pass_start(folder)
     await ha_restart_and_reconnect()
     await redeploy()
     await ha_device_node(folder)

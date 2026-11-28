@@ -1,6 +1,6 @@
 import ts_ha
 
-ts_ha.register(properties['nodeId'], properties['component'])
+ts_ha.register(properties['nodeId'], properties['component'], properties.get('start'))
 
 
 async def run(msg, properties):
