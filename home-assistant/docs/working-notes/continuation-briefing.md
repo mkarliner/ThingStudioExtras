@@ -89,8 +89,8 @@ unknown despite on start `off` — the binary sensor's node file didn't hand its
 and a binary sensor's start value only goes out on the first connect, read back from what `register` stored.
 Fixed, with a regression test that execs every entity's node file (`entity_nodes_pass_start`, mqtt 48 checks).
 Checked on the C3 after the fix (Mike): all three start values show at deploy — LED off, Brightness 32,
-Button off. Remaining on the board: after a reboot the start values show again, and `restore` comes back with
-the last value after a redeploy.
+Button off — and `restore` round-trips on `ha switch` (last value kept across a redeploy). Optional remainder:
+the same after a reboot.
 
 ## Next, in order
 
