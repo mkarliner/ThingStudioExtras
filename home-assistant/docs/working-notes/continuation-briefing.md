@@ -88,8 +88,9 @@ Board pass, started on the C3 (2026-11-28): the LED and Brightness start values 
 unknown despite on start `off` — the binary sensor's node file didn't hand its start value to `ts_ha.register`,
 and a binary sensor's start value only goes out on the first connect, read back from what `register` stored.
 Fixed, with a regression test that execs every entity's node file (`entity_nodes_pass_start`, mqtt 48 checks).
-Remaining on the board: after a redeploy and after a reboot, HA shows the start values — and the restored
-values with `restore` — without anyone pressing anything.
+Checked on the C3 after the fix (Mike): all three start values show at deploy — LED off, Brightness 32,
+Button off. Remaining on the board: after a reboot the start values show again, and `restore` comes back with
+the last value after a redeploy.
 
 ## Next, in order
 
