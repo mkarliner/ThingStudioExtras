@@ -46,9 +46,10 @@ Run from the repository root. The same script runs under CPython with `PYTHONPAT
 ## MQTT side: `mqtt_test.py`
 
 `ts_ha` and `ha_device.node.py` on the shared client: the will, online and discovery on each connect, `None` states
-on a flow's first connect, states, commands and echo, HA's `online`/`offline`, reconnects and redeploy cleanup. The
-doubles `doubles/ts_wifi.py` and `doubles/ts_mqtt.py` are written from the user guide's `ts_wifi` and `ts_mqtt`
-sections only (ThingStudio a57d686b, which answered core request #24), and are strict where the guide is: a `str`
+on a flow's first connect, states, commands and echo, the on-start and restore paths (SPEC v1.2), HA's
+`online`/`offline`, reconnects and redeploy cleanup. The doubles `doubles/ts_wifi.py`, `doubles/ts_mqtt.py` and
+`doubles/runtime.py` are written from the user guide's `ts_wifi`, `ts_mqtt` and "Persisting values" sections only
+(ThingStudio v0.14.0, which answered core request #24), and are strict where the guide is: a `str`
 payload, QoS 2, `set_will` after connecting or `subscribe` before `ensure_connected` fails the test.
 
 ```

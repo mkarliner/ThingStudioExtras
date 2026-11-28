@@ -18,7 +18,6 @@ import sys
 
 # (regex matched against a problem line, why it's open)
 KNOWN_GAPS = [
-    (r"^home-assistant: no docs/how-it-works\.md$", 'not written yet'),
     (r"^home-assistant/home-assistant/ha_\w+\.node\.json: property '\w+' has no help$",
      'help text to be added to the HA descriptors'),
 ]

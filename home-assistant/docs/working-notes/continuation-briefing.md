@@ -80,8 +80,8 @@ Examples, all left to right, nothing wired back, no startup nodes: `kitchen-sink
 
 Tests (2026-11-28, at v0.14.0 = `416f886f`): compile 33 cases (the old "unwired inputs warn" case now expects 0
 warnings; five new `on start` cases), vectors 48, mqtt 42 (new `on_start_and_restore`), all under MicroPython and
-CPython. `docs/check-docs.py`: 0 failures; the HA known gaps are unchanged (the how-it-works page, the
-descriptors' missing help on the old properties).
+CPython. `docs/check-docs.py`: 0 failures; `docs/how-it-works.md` written (the author-reader gap closed, its
+KNOWN GAP entry removed), leaving only the descriptors' missing help on the old properties.
 
 Still to do on the board (item 3 below): after a redeploy and after a reboot, HA shows the start values — and
 the restored values with `restore` — without anyone pressing anything.

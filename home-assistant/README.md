@@ -11,7 +11,7 @@ larger example: a shared library, generated compile hooks and an external contra
 | Doc | For |
 |---|---|
 | [`home-assistant/README.md`](home-assistant/README.md) | using the nodes: install, Home Assistant setup, examples, limits; a page per node in `home-assistant/docs/` |
-| `docs/how-it-works.md` | writing your own nodes, with this set as the example (not written yet) |
+| [`docs/how-it-works.md`](docs/how-it-works.md) | writing your own nodes, with this set as the example |
 | [`docs/SPEC.md`](docs/SPEC.md) | the contract with Home Assistant: topics, discovery and value payloads; `docs/vectors/` checks it |
 | [`test/README.md`](test/README.md) | setting up and running the tests |
 
