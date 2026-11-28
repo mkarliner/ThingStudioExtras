@@ -17,8 +17,9 @@
 # previous flow's value (SPEC v1.1, §3/§5) -- except a ha binary sensor's on-start value, which it publishes
 # instead (SPEC v1.2: a binary sensor has no output of its own to start from).
 #
-# restore (SPEC v1.2): publish_state keeps the value under the node's id in runtime.settings, and start_value
-# reads it back when the hook passed 'restore'.
+# restore (SPEC v1.2): only an entity whose on start is restore keeps its state -- and only when the value
+# changes, against the RAM mirror _last_saved -- under the node's id in runtime.settings, which start_value
+# reads back.
 #
 # build_discovery(), state_payload(), command_value() and start_value() are what the SPEC's vectors and the
 # MQTT-side tests exercise; start_value's restore case uses the settings store.
@@ -38,6 +39,7 @@ IGNORED = object()  # command_value(): the command is not valid for this entity
 
 _components = {}  # node id -> component dict, as the hook built it (without ids or topics)
 _starts = {}     # node id -> on-start value, as the hook resolved it: a flow value, 'restore', or None (SPEC v1.2)
+_last_saved = {}  # node id -> the last value kept in the settings store (restore, SPEC v1.2): the RAM mirror
 _device = None
 
 
@@ -279,6 +281,8 @@ def start_value(node_id):
     value = _starts.get(node_id)
     if value == "restore":
         value = runtime.settings.get(node_id, None)
+        if value is not None:
+            _last_saved[node_id] = value  # the RAM mirror starts from what's already on the board
     return value
 
 
@@ -305,12 +309,17 @@ async def publish_state(node_id, value):
     if text is None:
         return
     dev.reported.add(node_id)
-    try:
-        runtime.settings.set(node_id, value)  # restore (SPEC v1.2): the last value this node published as state
-    except Exception as e:
-        if not dev.restore_warned:
-            dev.restore_warned = True
-            print("ts_ha: restore is off for this flow: couldn't save states (%r)" % (e,))
+    # restore (SPEC v1.2): only an entity whose on start is restore keeps its state, and only when the value
+    # changes -- the RAM mirror (_last_saved) is compared, so the board's settings flash takes one write per
+    # change, not one per message.
+    if _starts.get(node_id) == "restore" and value != _last_saved.get(node_id):
+        _last_saved[node_id] = value
+        try:
+            runtime.settings.set(node_id, value)
+        except Exception as e:
+            if not dev.restore_warned:
+                dev.restore_warned = True
+                print("ts_ha: restore is off for this flow: couldn't save states (%r)" % (e,))
     await dev.client.publish(node_id, dev.base + "/" + node_id + "/state", text.encode(), True, 0)
 
 
@@ -361,3 +370,4 @@ def _reset():
     _device = None
     _components.clear()
     _starts.clear()
+    _last_saved.clear()

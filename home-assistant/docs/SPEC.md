@@ -75,9 +75,10 @@ start value is also published as the state — the echo itself never sees it. `h
 its start value is published as the state. A start value that doesn't fit the node (a number outside min..max,
 a select value that is not one of the options) is a compile error naming the node.
 
-`restore` starts from the last value the node published as the state, kept under the node's id in
-`runtime.settings`: it survives a reboot and a redeploy of the same flow; with nothing stored yet it behaves as
-`unknown`.
+`restore` starts from the last value the node published as the state. That last value is kept under the node's id
+in `runtime.settings`, written only for entities whose on start is `restore` and only when the value changes
+(the last saved value is kept in RAM and compared): it survives a reboot and a redeploy of the same flow, and with
+nothing stored yet it behaves as `unknown`. No other entity ever writes the store.
 
 This goes through the normal state path: values sent before the broker connects are kept and sent on connect,
 as the startup-node pattern already relied on.

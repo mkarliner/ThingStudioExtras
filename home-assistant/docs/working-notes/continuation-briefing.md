@@ -92,6 +92,12 @@ Checked on the C3 after the fix (Mike): all three start values show at deploy �
 Button off — and `restore` round-trips on `ha switch` (last value kept across a redeploy). Optional remainder:
 the same after a reboot.
 
+- **Settings writes trimmed (Mike, 2026-11-28):** `publish_state` now writes `runtime.settings` only for an
+  entity whose on start is `restore`, and only when the value differs from the last saved one (kept in RAM,
+  `_last_saved`; seeded from the store when `start_value` resolves it). Sensors and binary sensors never write.
+  SPEC §3's `restore` paragraph says so; new mqtt test `settings_writes` (6 checks; fails on the old code),
+  mqtt now 54 checks.
+
 ## Next, in order
 
 1. **Move the pin to v0.14.0.** In `home-assistant/THINGSTUDIO_VERSION` set the commit to `416f886f…` and name the

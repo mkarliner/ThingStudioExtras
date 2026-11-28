@@ -135,8 +135,10 @@ Follow a message both ways:
   with `topic` set to the entity's name so one downstream node can tell several entities apart (SPEC v1.2 §3).
   The first call instead runs `ts_ha.start`: the on-start value, once, as if HA had sent it (SPEC v1.2).
 - **Board → HA.** Anything wired into the input arrives at `run`; `publish_state` turns it into text
-  (`state_payload`, SPEC §3) and publishes it retained at QoS 0 on the entity's state topic. It also keeps the
-  value under the node's id in `runtime.settings` (*Persisting values*) — that's what `restore` reads back.
+  (`state_payload`, SPEC §3) and publishes it retained at QoS 0 on the entity's state topic. For an entity whose
+  on start is `restore` it also keeps the value under the node's id in `runtime.settings` (*Persisting values*) —
+  one write per changed value, compared against the RAM mirror — which is what `restore` reads back; no other
+  entity writes the store.
 
 `ha device`'s Python does the one-time setup: `ts_wifi.ensure_station(...)` with the four values its hook
 returned, `ts_mqtt.ensure_client(...)` for the flow's broker, `client.set_will(availability, b"offline", ...)`

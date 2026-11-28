@@ -182,6 +182,41 @@ async def on_start_and_restore():
     check('on start off resolves to the flow value False', ts_ha.start_value('lamp'), False)
 
 
+async def settings_writes():
+    """SPEC v1.2 (restore): only an entity whose on start is restore keeps its state, and only when the value
+    changes -- sensors and everything else never write settings, however often they publish."""
+    fresh()
+    ts_ha.register('temp', {'p': 'sensor', 'name': 'Temperature'})
+    ts_ha.register('door', {'p': 'binary_sensor', 'name': 'Door'})
+    ts_ha.register('lamp', {'p': 'switch', 'name': 'Lamp'}, 'restore')
+    c = client()
+    ts_ha.configure_device(c, 'dev', 'kitchen', chip=CHIP)
+    for value in (21, 21.5, 21, 'hot', 21):
+        await ts_ha.publish_state('temp', value)
+        await ts_ha.publish_state('door', True)
+    check('a sensor publishing repeatedly causes no settings write',
+          (runtime.settings.keys(), runtime.settings.writes), ([], 0))
+    baseline = runtime.settings.writes
+    await ts_ha.publish_state('lamp', True)
+    check('a restore entity writes on its first state', runtime.settings.writes, baseline + 1)
+    await ts_ha.publish_state('lamp', True)
+    await ts_ha.publish_state('lamp', True)
+    check('re-publishing the same value writes nothing', runtime.settings.writes, baseline + 1)
+    await ts_ha.publish_state('lamp', False)
+    check('a changed value writes again',
+          (runtime.settings.writes, runtime.settings.get('lamp')), (baseline + 2, False))
+
+    fresh()
+    ts_ha.register('lamp', {'p': 'switch', 'name': 'Lamp'}, 'restore')
+    c = client()
+    ts_ha.configure_device(c, 'dev', 'kitchen', chip=CHIP)
+    runtime.settings.set('lamp', True)  # the previous flow's stored state
+    writes = runtime.settings.writes
+    value = await ts_ha.start('lamp', True)
+    check('restore starts from the stored value', value, True)
+    check('publishing the start value back writes nothing new', runtime.settings.writes, writes)
+
+
 async def ha_restart_and_reconnect():
     fresh()
     c = flow()
@@ -292,6 +327,7 @@ async def main(folder):
     await states_and_commands()
     await on_start_and_restore()
     await entity_nodes_pass_start(folder)
+    await settings_writes()
     await ha_restart_and_reconnect()
     await redeploy()
     await ha_device_node(folder)

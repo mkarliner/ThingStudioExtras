@@ -23,6 +23,7 @@ class _Settings:
 
     def __init__(self):
         self.store = {}
+        self.writes = 0
         self.break_next = False
 
     def get(self, key, default=None):
@@ -33,6 +34,7 @@ class _Settings:
             self.break_next = False
             raise SettingsError('double: no room left on the board')
         self.store[key] = value
+        self.writes += 1
 
     def delete(self, key):
         self.store.pop(key, None)
@@ -42,6 +44,7 @@ class _Settings:
 
     def reset(self):
         self.store = {}
+        self.writes = 0
         self.break_next = False
 
 
