@@ -38,6 +38,7 @@ def fresh():
     del runtime.cleanups[:]
     ts_mqtt.reset()
     ts_wifi.reset()
+    runtime.settings.reset()
     ts_ha.RECORD_FILE = '/tmp/ts_ha_mqtt_test_record.json'
     try:
         import os
@@ -58,7 +59,6 @@ def flow():
     c = client()
     ts_ha.configure_device(c, 'dev', 'kitchen', model='ESP32-C3', area='Kitchen', chip=CHIP)
     return c
-
 
 def by_topic(c):
     return [(p[1], p[2], p[3], p[4]) for p in c.published]
@@ -128,6 +128,58 @@ async def states_and_commands():
     c.deliver(BASE + '/bell/set', b'PRESS')
     check('a button press is True', await task, True)
     check('a button has no state to echo', c.published, [])
+
+
+async def on_start_and_restore():
+    """SPEC v1.2 §3: on start. A two-faced node's start value goes out from its own start() (with echo it is also
+    published as the state); a binary sensor's start value goes out on the first connect; restore reads the last
+    published state back from the settings store."""
+    fresh()
+    # a binary sensor starting on: the first connect publishes its start value, not None
+    ts_ha.register('temp', {'p': 'sensor', 'name': 'Temperature'})
+    ts_ha.register('door', {'p': 'binary_sensor', 'name': 'Door'}, True)
+    c = client()
+    ts_ha.configure_device(c, 'dev', 'kitchen', model='ESP32-C3', area='Kitchen', chip=CHIP)
+    await c.ensure_connected('dev')
+    check('the door starts on, under its own node id',
+          [p for p in c.published if p[1] == BASE + '/door/state'],
+          [('door', BASE + '/door/state', b'ON', True, 0)])
+    check('the un-started sensor still gets its None',
+          [p for p in c.published if p[1] == BASE + '/temp/state'],
+          [('dev', BASE + '/temp/state', b'None', True, 0)])
+    check('no on start: nothing to start from', ts_ha.start_value('temp'), None)
+
+    fresh()
+    # restore: nothing stored yet behaves as unknown; the last published state is kept under the node id
+    ts_ha.register('lamp', {'p': 'switch', 'name': 'Lamp'}, 'restore')
+    c = client()
+    ts_ha.configure_device(c, 'dev', 'kitchen', chip=CHIP)
+    check('restore with nothing stored yet starts unknown', ts_ha.start_value('lamp'), None)
+    runtime.settings.set('lamp', True)  # the previous flow's last published state
+    check('restore reads the last published state back', ts_ha.start_value('lamp'), True)
+    value = await ts_ha.start('lamp', True)
+    check('the start value is emitted as if HA had sent it', value, True)
+    check('with echo, the start value is published as the state',
+          [p for p in c.published if p[1] == BASE + '/lamp/state'],
+          [('lamp', BASE + '/lamp/state', b'ON', True, 0)])
+    await c.ensure_connected('dev')
+    check('the first connect sends no None over a reported start',
+          [p[1] for p in c.published if p[1].endswith('/state')],
+          [BASE + '/lamp/state'])
+    check('publish_state keeps the value for restore',
+          (runtime.settings.get('lamp'), ts_ha.start_value('lamp')), (True, True))
+
+    fresh()
+    # wired (no echo): the start value is emitted, not published; the flow will report the state
+    ts_ha.register('lamp', {'p': 'switch', 'name': 'Lamp'}, False)
+    c = client()
+    ts_ha.configure_device(c, 'dev', 'kitchen', chip=CHIP)
+    value = await ts_ha.start('lamp', False)
+    check('without echo, the start value is emitted only', (value, c.published), (False, []))
+    await c.ensure_connected('dev')
+    check('the first connect still sends None: the flow reports the state',
+          [p[1] for p in c.published if p[1].endswith('/state')], [BASE + '/lamp/state'])
+    check('on start off resolves to the flow value False', ts_ha.start_value('lamp'), False)
 
 
 async def ha_restart_and_reconnect():
@@ -208,6 +260,7 @@ async def main(folder):
     await first_connect()
     await state_before_first_connect()
     await states_and_commands()
+    await on_start_and_restore()
     await ha_restart_and_reconnect()
     await redeploy()
     await ha_device_node(folder)

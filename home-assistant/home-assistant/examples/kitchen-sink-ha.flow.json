@@ -34,6 +34,15 @@
       }
     },
     {
+      "id": "knobfn",
+      "type": "thingstudio/function",
+      "properties": {
+        "code": "msg['payload'] = msg['payload']['percent']\nreturn msg\n",
+        "outputCount": 1,
+        "label": "percent"
+      }
+    },
+    {
       "id": "haknob",
       "type": "ha/sensor",
       "properties": {
@@ -61,7 +70,7 @@
       "id": "btnfn",
       "type": "thingstudio/function",
       "properties": {
-        "code": "if msg['payload'] in ('press', 'release'):\n    msg['payload'] = msg['payload'] == 'press'\n    return msg\nreturn None",
+        "code": "if msg['payload'] in ('press', 'release'):\n    msg['payload'] = msg['payload'] == 'press'\n    return msg\nreturn None\n",
         "outputCount": 1,
         "label": "pressed?"
       }
@@ -71,7 +80,8 @@
       "type": "ha/binary_sensor",
       "properties": {
         "name": "Button",
-        "deviceClass": "none"
+        "deviceClass": "none",
+        "onStart": "off"
       }
     },
     {
@@ -79,16 +89,30 @@
       "type": "ha/switch",
       "properties": {
         "name": "LED",
-        "deviceClass": "none"
+        "deviceClass": "none",
+        "onStart": "off"
+      }
+    },
+    {
+      "id": "habright",
+      "type": "ha/number",
+      "properties": {
+        "name": "Brightness",
+        "min": 0,
+        "max": 255,
+        "step": 1,
+        "unit": "",
+        "mode": "slider",
+        "onStart": "32"
       }
     },
     {
       "id": "ledfn",
       "type": "thingstudio/function",
       "properties": {
-        "code": "on = bool(msg['payload'])\nflow.set('on', on)\nb = flow.get('bright', 32)\nreturn [{'payload': (b << 16 | b << 8 | b) if on else 0}, {'payload': on}]",
-        "outputCount": 2,
-        "label": "on/off colour, state"
+        "code": "if msg['topic'] == 'LED':\n    context.set('on', bool(msg['payload']))\nelse:\n    context.set('bright', int(msg['payload']))\nb = context.get('bright', 32)\nmsg['payload'] = (b << 16 | b << 8 | b) if context.get('on', False) else 0\nreturn msg\n",
+        "outputCount": 1,
+        "label": "led colour"
       }
     },
     {
@@ -111,7 +135,7 @@
       "id": "tempfn",
       "type": "thingstudio/function",
       "properties": {
-        "code": "import esp32\nmsg['payload'] = round(esp32.mcu_temperature(), 1)\nreturn msg",
+        "code": "import esp32\nmsg['payload'] = round(esp32.mcu_temperature(), 1)\nreturn msg\n",
         "outputCount": 1,
         "label": "chip temperature"
       }
@@ -128,27 +152,6 @@
       }
     },
     {
-      "id": "habright",
-      "type": "ha/number",
-      "properties": {
-        "name": "LED brightness",
-        "min": 0,
-        "max": 255,
-        "step": 1,
-        "unit": "",
-        "mode": "slider"
-      }
-    },
-    {
-      "id": "brightfn",
-      "type": "thingstudio/function",
-      "properties": {
-        "code": "b = int(msg['payload'])\nflow.set('bright', b)\nreturn [{'payload': (b << 16 | b << 8 | b) if flow.get('on', False) else 0}, {'payload': b}]",
-        "outputCount": 2,
-        "label": "brightness, state"
-      }
-    },
-    {
       "id": "hahello",
       "type": "ha/button",
       "properties": {
@@ -161,39 +164,6 @@
       "properties": {
         "fullMessage": false
       }
-    },
-    {
-      "id": "knobfn",
-      "type": "thingstudio/function",
-      "properties": {
-        "code": "msg['payload'] = msg['payload']['percent']\nreturn msg",
-        "outputCount": 1,
-        "label": "percent"
-      }
-    },
-    {
-      "id": "btninit",
-      "type": "thingstudio/startup",
-      "properties": {
-        "payloadType": "bool",
-        "payloadValue": "false"
-      }
-    },
-    {
-      "id": "ledinit",
-      "type": "thingstudio/startup",
-      "properties": {
-        "payloadType": "bool",
-        "payloadValue": "false"
-      }
-    },
-    {
-      "id": "brightinit",
-      "type": "thingstudio/startup",
-      "properties": {
-        "payloadType": "number",
-        "payloadValue": "32"
-      }
     }
   ],
   "edges": [
@@ -201,6 +171,18 @@
       "hadev",
       0,
       "hadbg",
+      0
+    ],
+    [
+      "knob",
+      0,
+      "knobfn",
+      0
+    ],
+    [
+      "knobfn",
+      0,
+      "haknob",
       0
     ],
     [
@@ -217,6 +199,12 @@
     ],
     [
       "haled",
+      0,
+      "ledfn",
+      0
+    ],
+    [
+      "habright",
       0,
       "ledfn",
       0
@@ -240,71 +228,17 @@
       0
     ],
     [
-      "habright",
-      0,
-      "brightfn",
-      0
-    ],
-    [
-      "brightfn",
-      0,
-      "pixel",
-      0
-    ],
-    [
       "hahello",
       0,
       "hellodbg",
-      0
-    ],
-    [
-      "knob",
-      0,
-      "knobfn",
-      0
-    ],
-    [
-      "knobfn",
-      0,
-      "haknob",
-      0
-    ],
-    [
-      "btninit",
-      0,
-      "habtn",
-      0
-    ],
-    [
-      "ledinit",
-      0,
-      "ledfn",
-      0
-    ],
-    [
-      "ledfn",
-      1,
-      "haled",
-      0
-    ],
-    [
-      "brightinit",
-      0,
-      "brightfn",
-      0
-    ],
-    [
-      "brightfn",
-      1,
-      "habright",
       0
     ]
   ],
   "layout": {
     "hadev": {
       "pos": [
-        220,
-        60
+        80,
+        80
       ],
       "size": [
         130,
@@ -313,8 +247,8 @@
     },
     "hadbg": {
       "pos": [
-        420,
-        60
+        300,
+        80
       ],
       "size": [
         130,
@@ -323,148 +257,8 @@
     },
     "knob": {
       "pos": [
-        220,
-        140
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "haknob": {
-      "pos": [
-        560,
-        140
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "btn": {
-      "pos": [
-        220,
-        220
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "btnfn": {
-      "pos": [
-        380,
-        220
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "habtn": {
-      "pos": [
-        560,
-        220
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "haled": {
-      "pos": [
-        220,
-        300
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "ledfn": {
-      "pos": [
-        380,
-        300
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "pixel": {
-      "pos": [
-        560,
-        380
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "tick": {
-      "pos": [
-        220,
-        620
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "tempfn": {
-      "pos": [
-        380,
-        620
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "hatemp": {
-      "pos": [
-        560,
-        620
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "habright": {
-      "pos": [
-        220,
-        460
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "brightfn": {
-      "pos": [
-        380,
-        460
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "hahello": {
-      "pos": [
-        220,
-        540
-      ],
-      "size": [
-        130,
-        34
-      ]
-    },
-    "hellodbg": {
-      "pos": [
-        420,
-        540
+        80,
+        180
       ],
       "size": [
         130,
@@ -473,38 +267,138 @@
     },
     "knobfn": {
       "pos": [
-        380,
-        140
+        300,
+        180
       ],
       "size": [
         130,
         34
       ]
     },
-    "btninit": {
+    "haknob": {
       "pos": [
-        60,
-        260
+        520,
+        180
       ],
       "size": [
         130,
         34
       ]
     },
-    "ledinit": {
+    "btn": {
       "pos": [
-        60,
-        340
+        80,
+        280
       ],
       "size": [
         130,
         34
       ]
     },
-    "brightinit": {
+    "btnfn": {
       "pos": [
-        60,
-        500
+        300,
+        280
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "habtn": {
+      "pos": [
+        520,
+        280
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "haled": {
+      "pos": [
+        80,
+        380
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "habright": {
+      "pos": [
+        80,
+        450
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "ledfn": {
+      "pos": [
+        300,
+        415
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "pixel": {
+      "pos": [
+        520,
+        415
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "tick": {
+      "pos": [
+        80,
+        550
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "tempfn": {
+      "pos": [
+        300,
+        550
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "hatemp": {
+      "pos": [
+        520,
+        550
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "hahello": {
+      "pos": [
+        80,
+        650
+      ],
+      "size": [
+        130,
+        34
+      ]
+    },
+    "hellodbg": {
+      "pos": [
+        300,
+        650
       ],
       "size": [
         130,

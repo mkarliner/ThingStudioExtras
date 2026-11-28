@@ -3,7 +3,7 @@
 **Start here.** Read the repo's `AGENTS.md` and `CLAUDE.md` first: we work as a ThingStudio *user* (the user guide
 only, never core's code), third-party code is pinned, scriptless and gated, and git writes are handed to Mike. Then
 this page. Detail lives in `phase-1-briefing.md` (status, findings, decisions), `phase-2-first-install.md`,
-`implementation-plan.md` and `SPEC.md` (v1.1, frozen: changes need Mike's permission).
+`implementation-plan.md` and `SPEC.md` (v1.2, frozen: changes need Mike's permission).
 
 ## Where things stand
 
@@ -50,6 +50,42 @@ Phase 2 was walked on paper. Its main gap was having no release to install, whic
 - Deploying over a running flow on the C3 now gives a large power-cycle popup in the editor, so no request for that.
 - `~/.thingstudio` is attached to this project too: the session copies the bundle into `custom-nodes/` after changes.
 
+## Progress, 2026-11-28 (SPEC v1.2: on start)
+
+Mike (via the core session): last night's startup-node pattern makes the examples look like a mess — the fix
+belongs in the bundle, not the flow. Three changes, all built and tested here; SPEC §3 is now v1.2 (the wording
+was proposed and approved in the session, as for v1.1):
+
+- **`on start`** on `ha switch` (`unknown`/`off`/`on`/`restore`, default `unknown`), `ha number` and `ha select`
+  (a start value, or `unknown`, or `restore`), `ha binary sensor` (`unknown`/`off`/`on`). The start value comes
+  out of a two-faced node's output once at flow start, as if HA had sent it, so the downstream flow sets the
+  hardware; with an unwired input it is also published as the state. A binary sensor's start value goes out on
+  the first connect (it has no output). `restore` keeps the last published state under the node's id in
+  `runtime.settings`, and with nothing stored yet behaves as `unknown`.
+- **No compile warning for an unwired input.** The when-to-wire-back guidance (a relay with a feedback contact,
+  a thermostat) moved to the bundle README and the node pages.
+- **`msg.topic` on each entity's output is the entity's name** (Node-RED convention): one function can take
+  several entities and tell them apart.
+
+Implementation: `hooks/common.py` resolves and validates `onStart` (a number outside min..max, or a select value
+that is not an option, is a compile error naming the node); `ts_ha.register(..., start)`, `ts_ha.start_value` and
+`ts_ha.start`; `publish_state` keeps the value for `restore` (a settings failure degrades to one console line,
+restore off, the state still goes out). The generated hooks are rebuilt. The four two-faced/button node files
+emit `topic` = name; `ha binary sensor` and `ha sensor` are unchanged in code.
+
+Examples, all left to right, nothing wired back, no startup nodes: `kitchen-sink-ha` is now 17 nodes, with one
+`led colour` function taking both the LED switch and the Brightness number (told apart by `topic`); `starter-ha`
+(12 nodes) and `freenove-s3-ha` (17 nodes) follow the same treatment. All three are relaid out with
+`thingstudio-compile --relayout` and pass `--layout --strict` with 0 warnings.
+
+Tests (2026-11-28, at v0.14.0 = `416f886f`): compile 33 cases (the old "unwired inputs warn" case now expects 0
+warnings; five new `on start` cases), vectors 48, mqtt 42 (new `on_start_and_restore`), all under MicroPython and
+CPython. `docs/check-docs.py`: 0 failures; the HA known gaps are unchanged (the how-it-works page, the
+descriptors' missing help on the old properties).
+
+Still to do on the board (item 3 below): after a redeploy and after a reboot, HA shows the start values — and
+the restored values with `restore` — without anyone pressing anything.
+
 ## Next, in order
 
 1. **Move the pin to v0.14.0.** In `home-assistant/THINGSTUDIO_VERSION` set the commit to `416f886f…` and name the
@@ -68,6 +104,9 @@ Phase 2 was walked on paper. Its main gap was having no release to install, whic
      run ThingStudio. Plan 1.9's checklist: entities and classes; states and commands, wired and echoed; unplug
      gives offline and plug in gives online; HA restart and broker restart; delete a node and redeploy; rename the
      board; deploy a non-HA flow; C3 heap figures (printed with each discovery); `tools/ha-cleanup.py` afterwards.
+   - SPEC v1.2: redeploy `kitchen-sink-ha`, then reboot the board — HA shows the start values (LED off,
+     Brightness 32, Button off) without anyone pressing anything. Set one entity to `restore`, change it in HA,
+     redeploy and reboot: it comes back with the last value.
    - Phase 2 checks: does the Board settings name become the HA device name (with **device name** empty)? If not,
      raise a core request for the guide to say what the hostname is. Does ✎ on the starter's unsaved credentials
      behave as the README says? Does a WiFi deploy work with the board away from the computer?

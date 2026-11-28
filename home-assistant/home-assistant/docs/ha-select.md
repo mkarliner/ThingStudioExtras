@@ -8,25 +8,32 @@ Needs an **ha device** node in the flow.
 
 - **name**: the entity's name in Home Assistant. Required.
 - **options**: one option per line, each different. Blank lines and spaces around an option are ignored.
+- **on start**: a start value, one of the **options**, `unknown`, or `restore` (the last value it showed).
+  Default `unknown`.
 
 ## Wiring
 
-**Output**: one message each time an option is chosen in Home Assistant:
+**Output**: one message each time an option is chosen in Home Assistant, and once at flow start when **on start**
+is a start value (as if Home Assistant had sent it):
 
 | Field | Value |
 | --- | --- |
 | `payload` | the option, as text |
-| `topic` | `''` |
+| `topic` | the entity's name, so one node can tell several entities apart |
 
 **Input**: the current option. It must be one of **options**. `None` sends nothing. The input takes any type, so a
 function node's result can be wired straight in.
 
 ## Behavior
 
-The select shows as unknown until the flow sends it an option. To show a value from the moment the flow starts, see "Showing a value from the start" in the bundle README.
+With **on start** `unknown` (the default), the select shows as unknown until the flow (or the echo below) sends it
+an option. With a start value, it goes out on the output once at flow start so the downstream flow can act on it;
+when the input isn't wired it is also published as the state. With `restore`, the select starts from the last
+option it showed, kept on the board; with nothing stored yet it behaves as `unknown`.
 
-**Input not wired:** the node confirms each choice itself, and the compile warns about it, as for
-[ha switch](ha-switch.md#behavior).
+**Input not wired:** the node confirms each choice itself: Home Assistant shows the option as chosen as soon as
+it's picked, whether or not anything happened. That's the right choice when the choice is the state. When the
+real option can differ from the command, wire the current option back to the input.
 
 ## Errors
 

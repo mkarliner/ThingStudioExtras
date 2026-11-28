@@ -7,11 +7,13 @@
   "color": "#18bcf2",
   "bgcolor": "#0b4a63",
   "icon": "☰",
-  "description": "A list of options in Home Assistant. Sends the option chosen in HA. Wire the current option back to the input so HA shows it; left unwired, the node confirms each choice itself. Needs an ha device node in the flow.",
+  "description": "A list of options in Home Assistant. Sends the option chosen in HA. Wire the current option back to the input so HA shows it; left unwired, the node confirms each choice itself. 'On start' picks the value at flow start. Needs an ha device node in the flow.",
   "ports": { "inputs": [{ "name": "msg", "type": "any" }], "outputs": [{ "name": "msg", "type": "string" }] },
   "properties": [
     { "name": "name", "label": "name", "kind": "text", "default": "Select" },
     { "name": "options", "label": "options", "kind": "textarea", "default": "off\non", "help": "One option per line." },
+    { "name": "onStart", "label": "on start", "kind": "text", "default": "unknown",
+      "help": "A start value, one of the options, or unknown, or restore (the last value it showed)." },
     { "name": "nodeId", "label": "node id", "kind": "nodeId", "default": "" }
   ]
 }

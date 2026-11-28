@@ -9,6 +9,7 @@ Needs an **ha device** node in the flow.
 - **name**: the entity's name in Home Assistant. Required.
 - **device class**: what it senses, such as `door`, `motion` or `problem`: Home Assistant shows on and off as open and
   closed, detected and clear, and so on. Default `none`.
+- **on start**: the state the sensor starts with at flow start: `unknown` (default), `off`, or `on`.
 
 ## Wiring
 
@@ -20,8 +21,8 @@ false (`False`, `0`, empty text). `None` sends nothing.
 Each message sends on or off to Home Assistant at once. The broker keeps the latest, so a Home Assistant that
 restarts shows it straight away.
 
-The binary sensor shows as unknown until the flow sends it a value. For one fed by events, such as a button, wire a
-**startup** node with `false` into it: see "Showing a value from the start" in the bundle README.
+For one fed by events, such as a button, set **on start** to the resting state, `off`: the sensor starts with it,
+so it doesn't show unknown while the first event is still to come.
 
 ## Errors
 

@@ -7,7 +7,7 @@
   "color": "#18bcf2",
   "bgcolor": "#0b4a63",
   "icon": "⏻",
-  "description": "A switch in Home Assistant. Sends true/false when it's switched in HA. Wire the real state back to the input so HA shows it; left unwired, the node confirms each command itself. Needs an ha device node in the flow.",
+  "description": "A switch in Home Assistant. Sends true/false when it's switched in HA. Wire the real state back to the input so HA shows it; left unwired, the node confirms each command itself. 'On start' picks the value at flow start. Needs an ha device node in the flow.",
   "ports": {
     "inputs": [
       {
@@ -48,6 +48,31 @@
           "label": "outlet"
         }
       ]
+    },
+    {
+      "name": "onStart",
+      "label": "on start",
+      "kind": "select",
+      "default": "unknown",
+      "options": [
+        {
+          "value": "unknown",
+          "label": "unknown"
+        },
+        {
+          "value": "off",
+          "label": "off"
+        },
+        {
+          "value": "on",
+          "label": "on"
+        },
+        {
+          "value": "restore",
+          "label": "restore"
+        }
+      ],
+      "help": "What the switch starts from: unknown (as before), off, on, or restore (the last value it showed)."
     },
     {
       "name": "nodeId",

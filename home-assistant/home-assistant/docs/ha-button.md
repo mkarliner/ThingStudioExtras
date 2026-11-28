@@ -15,7 +15,7 @@ Needs an **ha device** node in the flow.
 | Field | Value |
 | --- | --- |
 | `payload` | `True` |
-| `topic` | `''` |
+| `topic` | the entity's name, so one node can tell several entities apart |
 
 ## Behavior
 

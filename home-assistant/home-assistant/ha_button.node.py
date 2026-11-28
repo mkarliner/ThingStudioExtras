@@ -1,6 +1,6 @@
 import ts_ha
 
-ts_ha.register(properties['nodeId'], properties['component'])
+ts_ha.register(properties['nodeId'], properties['component'], properties.get('start'))
 
 
 async def wait(properties):
@@ -8,4 +8,4 @@ async def wait(properties):
 
 
 async def emit(properties):
-    return {'payload': True, 'topic': ''}
+    return {'payload': True, 'topic': properties['name']}

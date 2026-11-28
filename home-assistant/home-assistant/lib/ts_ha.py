@@ -5,17 +5,23 @@
 # ha_* nodes. One module, so its state is shared by every HA node in the flow (plan task 1.3).
 #
 #   ha_device:  configure_device(...) at setup; await ha_status(node_id) in its wait() for HA's online/offline
-#   entities:   register(node_id, component) at setup (the component dict comes from the node's compile hook);
-#               await publish_state(node_id, value); await command(node_id, echo) for HA's commands
+#   entities:   register(node_id, component, start) at setup (the component dict and the on-start value come from
+#               the node's compile hook, SPEC v1.2 §3); await publish_state(node_id, value); await start(node_id,
+#               echo) once at flow start, then await command(node_id, echo) for HA's commands
 #
 # Entity nodes may be set up before ha_device (graph order), so register() works without a device. The will goes on
 # the shared ts_mqtt client in configure_device(), before anything connects (all node setup runs at flow start).
 # On every connect (ts_mqtt's on_connect): `online`, then the discovery message, with a {"p": ...} stub for each
 # component the board announced last time and no longer has (SPEC §7, the record in ha_entities.json). On the
 # first connect of a flow, `None` for every state the flow hasn't reported yet, so HA shows unknown rather than the
-# previous flow's value (SPEC v1.1, §3/§5).
+# previous flow's value (SPEC v1.1, §3/§5) -- except a ha binary sensor's on-start value, which it publishes
+# instead (SPEC v1.2: a binary sensor has no output of its own to start from).
 #
-# build_discovery(), state_payload() and command_value() are pure, and are what the SPEC's vectors test.
+# restore (SPEC v1.2): publish_state keeps the value under the node's id in runtime.settings, and start_value
+# reads it back when the hook passed 'restore'.
+#
+# build_discovery(), state_payload(), command_value() and start_value() are what the SPEC's vectors and the
+# MQTT-side tests exercise; start_value's restore case uses the settings store.
 
 import json
 import runtime
@@ -31,6 +37,7 @@ COMMANDABLE = ("switch", "number", "select", "button")
 IGNORED = object()  # command_value(): the command is not valid for this entity
 
 _components = {}  # node id -> component dict, as the hook built it (without ids or topics)
+_starts = {}     # node id -> on-start value, as the hook resolved it: a flow value, 'restore', or None (SPEC v1.2)
 _device = None
 
 
@@ -198,6 +205,7 @@ class _Device:
         self.commands_subscribed = set()
         self.reported = set()   # node ids whose state this flow has published
         self.started = False    # the first connect of this flow has happened
+        self.restore_warned = False
         client.set_will(self.availability, b"offline", True, 1)
         client.on_connect(self._on_connect)
 
@@ -216,8 +224,16 @@ class _Device:
         if not self.started:
             self.started = True
             for node_id, comp in list(_components.items()):
-                if comp["p"] != "button" and node_id not in self.reported:
-                    await self.client.publish(self.node_id, self.base + "/" + node_id + "/state", b"None", True, 0)
+                if comp["p"] == "button" or node_id in self.reported:
+                    continue
+                # a binary sensor has no on-start of its own (SPEC v1.2): the connect publishes its start value,
+                # not None; a two-faced node's start value goes out from its own wait(), so only a None covers it
+                if comp["p"] == "binary_sensor":
+                    start = start_value(node_id)
+                    if start is not None:
+                        await publish_state(node_id, start)
+                        continue
+                await self.client.publish(self.node_id, self.base + "/" + node_id + "/state", b"None", True, 0)
 
     async def _announce_later(self):
         try:
@@ -247,12 +263,33 @@ def configure_device(client, node_id, name, model="", runtime_version="", area="
     return _device
 
 
-def register(node_id, component):
-    """An entity node's setup. `component` is its hook-built dict: p, name and the type's options."""
+def register(node_id, component, start=None):
+    """An entity node's setup. `component` is its hook-built dict: p, name and the type's options; `start` the
+    hook-resolved on-start value (SPEC v1.2)."""
     if node_id in _components:
         raise ValueError("ts_ha: two HA nodes share the node id %r" % (node_id,))
     _components[node_id] = dict(component)
+    _starts[node_id] = start
     runtime.register_cleanup("ts_ha", _reset)
+
+
+def start_value(node_id):
+    """The entity's on-start flow value (SPEC v1.2 §3): None when there's nothing to start from (unknown, or
+    restore with nothing stored yet)."""
+    value = _starts.get(node_id)
+    if value == "restore":
+        value = runtime.settings.get(node_id, None)
+    return value
+
+
+async def start(node_id, echo=False):
+    """A two-faced node's first wait() (SPEC v1.2 §3): the on-start value, emitted once at flow start as if HA
+    had sent it as a command. With `echo` (an unwired input) it is also published as the state; the echo in
+    command() never sees it. None keeps the v1.1 behaviour."""
+    value = start_value(node_id)
+    if value is not None and echo and _components[node_id]["p"] != "button":
+        await publish_state(node_id, value)
+    return value
 
 
 def _need_device():
@@ -268,6 +305,12 @@ async def publish_state(node_id, value):
     if text is None:
         return
     dev.reported.add(node_id)
+    try:
+        runtime.settings.set(node_id, value)  # restore (SPEC v1.2): the last value this node published as state
+    except Exception as e:
+        if not dev.restore_warned:
+            dev.restore_warned = True
+            print("ts_ha: restore is off for this flow: couldn't save states (%r)" % (e,))
     await dev.client.publish(node_id, dev.base + "/" + node_id + "/state", text.encode(), True, 0)
 
 
@@ -311,9 +354,10 @@ async def ha_status(node_id):
 
 
 def _reset():
-    """Redeploy cleanup: the next flow starts with no device and no components."""
+    """Redeploy cleanup: the next flow starts with no device, no components and no on-start values."""
     global _device
     if _device is not None:
         _device.stop()
     _device = None
     _components.clear()
+    _starts.clear()

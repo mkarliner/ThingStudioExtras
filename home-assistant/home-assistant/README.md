@@ -83,35 +83,44 @@ To build your own flow:
 
 1. Put an **ha device** node in the flow and pick the flow's **WiFi** and **MQTT Broker**.
 2. Add an entity node for each thing Home Assistant should see, and wire it like any other node: a sensor's value
-   into **ha sensor**, **ha switch**'s output to what it switches, and the real state back into its input.
+   into **ha sensor**, **ha switch**'s output to what it switches. Give each entity an **on start** value so it
+   shows a known state the moment the flow starts.
 3. Deploy. The board appears under Settings → Devices & services → MQTT as its hostname, or the **device name** you
    gave **ha device**.
 
-### Showing a value from the start
+### Starting entities with a value
 
-When a flow starts, each entity shows as unknown in Home Assistant until the flow sends it a value. That's
-deliberate: it stops Home Assistant showing a value left over from the last flow. To show a value straight away, have
-the flow send one as it starts:
+When a flow starts, each entity shows as unknown in Home Assistant until the flow (or the echo) reports a value.
+That's deliberate: it stops Home Assistant showing a value left over from the last flow. Instead of wiring a
+**startup** node into each entity, set its **on start**:
 
-- **A switch, number or select** that sets something on the board: wire a **startup** node (user guide, node
-  reference, *startup*) into the same path as Home Assistant's commands, with the starting value. The board's output
-  is then set to a known state, and the state wired back to the entity reports it.
-- **A binary sensor** fed by events, such as a button: a **startup** node with the resting state, `false`, wired
-  into it.
-- **A sensor**: a source that reads at once. A **timer** sends its first message as the flow starts. An **adc** sends
-  only when the reading moves, unless its **poll (ms)** is set; then it sends at least that often.
+- **A switch, number or select** that sets something on the board: **on start** sends the value out on the
+  output once at flow start, as if Home Assistant had sent it, so the downstream flow sets the hardware. Left
+  unwired, the node also publishes it as the state.
+- **A binary sensor** fed by events, such as a button: set **on start** to the resting state, `off`.
+- **A sensor**: it shows what the flow reports; there's nothing to start it with.
 
-It doesn't matter that the board isn't connected yet when **startup** fires: the value is kept and sent once the
-board reaches the broker. All three examples do this.
+`restore` (switch, number and select) starts from the last value the entity showed, kept on the board: after a
+reboot or a redeploy of the same flow, Home Assistant picks up where it left off. With nothing stored yet it
+behaves as `unknown`.
+
+It doesn't matter that the board isn't connected yet when the flow starts: a start value is kept and sent once
+the board reaches the broker. All three examples use **on start**.
+
+**When to wire the real state back:** an entity whose input is unwired confirms each command itself, so Home
+Assistant shows the value as set whether or not anything happened. That's right when the command is the state,
+such as an LED. When the real state can differ from the command, such as a relay with a feedback contact or a
+thermostat, wire the real state back to the entity's input.
 
 Two more example flows are in `examples/`, for particular boards:
 
-- `kitchen-sink-ha.flow.json`, for the kitchen-sink ESP32-C3 board: the knob, the button, the chip temperature, and
-  the RGB LED switched and dimmed from Home Assistant, starting off, with the real state wired back. The knob is
-  also read once a minute.
-- `freenove-s3-ha.flow.json`, for the Freenove ESP32-S3 4" display board, with no extra parts: the screen backlight's
-  brightness, the chip temperature and free memory, a running-hot alarm, and a switch, a select and a button. Each
-  starts at a set value, with its state wired back.
+- `kitchen-sink-ha.flow.json`, for the kitchen-sink ESP32-C3 board: the knob, the button, the chip temperature,
+  and the RGB LED switched and dimmed from Home Assistant, starting off at brightness 32. The knob is also read
+  once a minute. One **led colour** function takes both the **LED** switch and the **Brightness** number, telling
+  them apart by their output's `topic`.
+- `freenove-s3-ha.flow.json`, for the Freenove ESP32-S3 4" display board, with no extra parts: the screen
+  backlight's brightness, the chip temperature and free memory, a running-hot alarm, and a switch, a select and
+  a button. Each starts at a set value.
 
 Open one in the editor, pick your own WiFi and MQTT broker in **ha device**, and deploy.
 

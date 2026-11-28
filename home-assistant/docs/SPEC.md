@@ -1,7 +1,9 @@
 # ThingStudio ↔ Home Assistant over MQTT — SPEC v1
 
 **Status: frozen v1, 2026-11-25 (Mike).** Checked on Mike's HA (§10). v1.1 (2026-11-25, Mike's permission): a
-state is unknown until the running flow reports it (§3, §5). Phase 1 task 1.1 of
+state is unknown until the running flow reports it (§3, §5). v1.2 (2026-11-28, Mike's permission): the **on
+start** property, the unwired-input warning dropped, and the output's `msg.topic` is the entity's name (§3).
+Phase 1 task 1.1 of
 `implementation-plan.md` (decision 7: the HA contract has its own spec, with vectors; Mike's
 permission for this spec is in the plan). After freezing, a change needs Mike's permission, like every ThingStudio
 interface spec.
@@ -57,8 +59,38 @@ flow (or the echo) reports one. The board does this by publishing the text `None
 topic, which HA shows as `unknown` for every type above (§10, check 7). Without it, HA and the broker keep the
 previous flow's last value, e.g. a switch shown on while the new flow has just started with the LED off.
 
+**On start (v1.2).** `ha_switch`, `ha_number`, `ha_select` and `ha_binary_sensor` take an **on start** property;
+`ha_sensor` and `ha_button` do not (a sensor reports the world; a button has no state).
+
+| Node | on start values | Default |
+|---|---|---|
+| `ha_switch` | `unknown`, `off`, `on`, `restore` | `unknown` |
+| `ha_binary_sensor` | `unknown`, `off`, `on` | `unknown` |
+| `ha_number` | `unknown`, `restore`, or a start value: a number inside min..max (an int when the step is whole) | `unknown` |
+| `ha_select` | `unknown`, `restore`, or a start value: one of the node's options | `unknown` |
+
+`unknown` keeps the v1.1 behaviour. With a start value, the node emits it once on its output at flow start, as if
+HA had sent it as a command, so the downstream flow sets the hardware; with an unwired input (echo, below) the
+start value is also published as the state — the echo itself never sees it. `ha_binary_sensor` has no output, so
+its start value is published as the state. A start value that doesn't fit the node (a number outside min..max,
+a select value that is not one of the options) is a compile error naming the node.
+
+`restore` starts from the last value the node published as the state, kept under the node's id in
+`runtime.settings`: it survives a reboot and a redeploy of the same flow; with nothing stored yet it behaves as
+`unknown`.
+
+This goes through the normal state path: values sent before the broker connects are kept and sent on connect,
+as the startup-node pattern already relied on.
+
 **Unwired input** on `ha_switch`, `ha_number`, `ha_select` (decision 9): the board publishes each accepted command
-back as the state, as if the flow had confirmed it. The compile warns.
+back as the state, as if the flow had confirmed it. There is no compile warning (v1.2): when the real state can
+differ from the command, such as a relay with a feedback contact or a thermostat, the flow wires the real state
+back to the input; the bundle README says when.
+
+**Output topic (v1.2).** Each entity node sets `msg['topic']` on its output to the entity's name (the node's
+`name` property), as the Node-RED HA nodes do, so one downstream node can tell several entities apart. It labels
+the flow message, not an MQTT topic: §2 is unchanged. (The outputs of `ha_switch`, `ha_number`, `ha_select` and
+`ha_button`.)
 
 ## 4. Discovery message
 

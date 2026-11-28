@@ -7,7 +7,7 @@
   "color": "#18bcf2",
   "bgcolor": "#0b4a63",
   "icon": "#",
-  "description": "A number in Home Assistant, set with a slider or a box. Sends the value when it's changed in HA. Wire the real value back to the input so HA shows it; left unwired, the node confirms each change itself. Needs an ha device node in the flow.",
+  "description": "A number in Home Assistant, set with a slider or a box. Sends the value when it's changed in HA. Wire the real value back to the input so HA shows it; left unwired, the node confirms each change itself. 'On start' picks the value at flow start. Needs an ha device node in the flow.",
   "ports": { "inputs": [{ "name": "msg", "type": "any" }], "outputs": [{ "name": "msg", "type": "number" }] },
   "properties": [
     { "name": "name", "label": "name", "kind": "text", "default": "Number" },
@@ -17,6 +17,8 @@
     { "name": "unit", "label": "unit", "kind": "text", "default": "" },
     { "name": "mode", "label": "mode", "kind": "select", "default": "slider",
       "options": [ { "value": "slider", "label": "slider" }, { "value": "box", "label": "box" } ] },
+    { "name": "onStart", "label": "on start", "kind": "text", "default": "unknown",
+      "help": "A start value inside min..max, or unknown, or restore (the last value it showed)." },
     { "name": "nodeId", "label": "node id", "kind": "nodeId", "default": "" }
   ]
 }

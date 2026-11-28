@@ -108,28 +108,49 @@ def component(node_type, properties):
     return comp, None
 
 
-_ECHO_WHAT = {'ha/switch': ('each command', 'the real state'), 'ha/number': ('each change', 'the real value'),
-              'ha/select': ('each choice', 'the current option')}
+def _start(node_type, properties, comp):
+    """The on-start value (SPEC v1.2 §3), resolved to a flow value, 'restore', or None (unknown); (value, error)."""
+    if node_type == 'ha/switch':
+        return {'unknown': None, 'off': False, 'on': True, 'restore': 'restore'}.get(
+            properties.get('onStart') or 'unknown'), None
+    if node_type == 'ha/binary_sensor':
+        return {'unknown': None, 'off': False, 'on': True}.get(
+            properties.get('onStart') or 'unknown'), None
+    text = _text(properties, 'onStart') or 'unknown'
+    if text == 'unknown':
+        return None, None
+    if text == 'restore':
+        return 'restore', None
+    if node_type == 'ha/number':
+        value = _number(text)
+        if value is None:
+            return None, ('ha number %r: on start %r must be a number in min..max, or unknown or restore'
+                          % (comp['name'], text))
+        if value < comp['min'] or value > comp['max']:
+            return None, ('ha number %r: on start %r is outside min..max (%s..%s)'
+                          % (comp['name'], text, comp['min'], comp['max']))
+        return value, None
+    if text not in comp['ops']:
+        return None, "ha select %r: on start %r is not one of the options %r" % (comp['name'], text, list(comp['ops']))
+    return text, None
 
 
 def entity_compile(ctx, node_type, properties):
-    """The whole hook of an entity node: needs an ha device, builds its component, and for the two-faced nodes works
-    out echo from whether the input is wired (SPEC §3)."""
+    """The whole hook of an entity node: needs an ha device, builds its component and its on-start value, and for
+    the two-faced nodes works out echo from whether the input is wired (SPEC §3, v1.2)."""
     if not ha_devices(ctx):
         return {'errors': ['%s needs an ha device node in the flow' % label(node_type)]}
     comp, err = component(node_type, properties)
     if err:
         return {'errors': [err]}
+    start, err = _start(node_type, properties, comp)
+    if err:
+        return {'errors': [err]}
     if node_type not in COMMAND_TYPES:
-        return {'properties': {'component': comp}}
+        return {'properties': {'component': comp, 'start': start}}
     wired = ((ctx.get('node') or {}).get('wired') or {}).get('inputs') or [False]
     echo = not wired[0]
-    warnings = []
-    if echo:
-        what, real = _ECHO_WHAT[node_type]
-        warnings.append('%s %r: input not wired, so HA shows %s as done -- wire %s back to the input to show what '
-                        'actually happened' % (label(node_type), comp['name'], what, real))
-    return {'properties': {'component': comp, 'echo': echo}, 'warnings': warnings}
+    return {'properties': {'component': comp, 'start': start, 'echo': echo}}
 
 
 def json_size(obj):
